@@ -10,7 +10,8 @@ import '../db/database.dart';
 /// Backup files are JSON. Unencrypted:
 ///
 ///     {"format": "comma-backup", "version": 1, "exportedAt": "...",
-///      "dayLogs": [...], "symptomEntries": [...], "settings": {...}}
+///      "dayLogs": [...], "symptomEntries": [...], "sexEntries": [...],
+///      "settings": {...}}
 ///
 /// Encrypted, the same JSON is sealed with AES-256-GCM using a key derived
 /// from the user's password with PBKDF2-HMAC-SHA256:
@@ -23,7 +24,7 @@ import '../db/database.dart';
 /// The format is documented so data can always be recovered without the app.
 const _plainFormat = 'comma-backup';
 const _encryptedFormat = 'comma-backup-encrypted';
-const _version = 1;
+const _version = 2;
 const _maxIterations = 10000000;
 
 class BackupException implements Exception {
@@ -164,6 +165,7 @@ String _day(DateTime d) => d.toIso8601String().substring(0, 10);
 Future<Map<String, Object?>> exportBackup(AppDatabase db) async {
   final logs = await db.select(db.dayLogs).get();
   final symptoms = await db.select(db.symptomEntries).get();
+  final sex = await db.select(db.sexEntries).get();
   final settings = await db.select(db.settings).get();
   return {
     'format': _plainFormat,
@@ -179,13 +181,22 @@ Future<Map<String, Object?>> exportBackup(AppDatabase db) async {
           if (l.bbtDisturbed) 'bbtDisturbed': true,
           if (l.lhTest != null) 'lhTest': l.lhTest!.name,
           if (l.pregnancyTest != null) 'pregnancyTest': l.pregnancyTest!.name,
-          if (l.sex != null) 'sex': l.sex!.name,
           if (l.note != null) 'note': l.note,
         },
     ],
     'symptomEntries': [
       for (final s in symptoms)
         {'date': _day(s.date), 'symptom': s.symptom, 'severity': s.severity},
+    ],
+    'sexEntries': [
+      for (final e in sex)
+        {
+          'date': _day(e.date),
+          if (e.minuteOfDay != null) 'minuteOfDay': e.minuteOfDay,
+          if (e.protection != null) 'protection': e.protection!.name,
+          if (e.orgasm != null) 'orgasm': e.orgasm,
+          if (e.note != null) 'note': e.note,
+        },
     ],
     'settings': {for (final s in settings) s.key: s.value},
   };
@@ -197,12 +208,11 @@ Future<Map<String, Object?>> exportBackup(AppDatabase db) async {
 Future<int> importBackup(AppDatabase db, Map<String, Object?> backup) async {
   final List<DayLogsCompanion> logs;
   final List<SymptomEntriesCompanion> symptoms;
+  final List<SexEntriesCompanion> sex;
   final List<SettingsCompanion> settings;
   try {
-    logs = [
-      for (final raw in backup['dayLogs'] as List)
-        _parseDayLog(raw as Map<String, Object?>),
-    ];
+    final rawLogs = (backup['dayLogs'] as List).cast<Map<String, Object?>>();
+    logs = [for (final raw in rawLogs) _parseDayLog(raw)];
     symptoms = [
       for (final raw in backup['symptomEntries'] as List)
         SymptomEntriesCompanion.insert(
@@ -211,6 +221,32 @@ Future<int> importBackup(AppDatabase db, Map<String, Object?> backup) async {
           severity: Value(raw['severity'] as int),
         ),
     ];
+    sex = backup['version'] == 1
+        // Version 1 stored at most one "sex" value per day log.
+        ? [
+            for (final raw in rawLogs)
+              if (raw['sex'] case 'protected' || 'unprotected')
+                SexEntriesCompanion.insert(
+                  date: _parseDay(raw['date']),
+                  protection: Value(
+                    raw['sex'] == 'unprotected'
+                        ? SexProtection.unprotected
+                        : SexProtection.otherProtection,
+                  ),
+                ),
+          ]
+        : [
+            for (final raw in backup['sexEntries'] as List)
+              SexEntriesCompanion.insert(
+                date: _parseDay((raw as Map)['date']),
+                minuteOfDay: Value(raw['minuteOfDay'] as int?),
+                protection: Value(
+                  _enum(SexProtection.values, raw['protection']),
+                ),
+                orgasm: Value(raw['orgasm'] as bool?),
+                note: Value(raw['note'] as String?),
+              ),
+          ];
     settings = [
       for (final e in (backup['settings'] as Map).entries)
         SettingsCompanion.insert(
@@ -227,6 +263,7 @@ Future<int> importBackup(AppDatabase db, Map<String, Object?> backup) async {
     await db.batch((b) {
       b.insertAll(db.dayLogs, logs);
       b.insertAll(db.symptomEntries, symptoms);
+      b.insertAll(db.sexEntries, sex);
       b.insertAll(db.settings, settings);
     });
   });
@@ -249,6 +286,5 @@ DayLogsCompanion _parseDayLog(Map<String, Object?> raw) => DayLogsCompanion(
   bbtDisturbed: Value(raw['bbtDisturbed'] as bool? ?? false),
   lhTest: Value(_enum(TestResult.values, raw['lhTest'])),
   pregnancyTest: Value(_enum(TestResult.values, raw['pregnancyTest'])),
-  sex: Value(_enum(SexActivity.values, raw['sex'])),
   note: Value(raw['note'] as String?),
 );

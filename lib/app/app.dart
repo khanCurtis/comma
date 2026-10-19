@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/calendar/calendar_screen.dart';
 import '../features/insights/insights_screen.dart';
+import '../features/learn/learn_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/today/today_screen.dart';
@@ -54,6 +55,7 @@ class _HomeShellState extends State<HomeShell> {
     TodayScreen(),
     CalendarScreen(),
     InsightsScreen(),
+    LearnScreen(),
     SettingsScreen(),
   ];
 
@@ -76,6 +78,10 @@ class _HomeShellState extends State<HomeShell> {
           NavigationDestination(
             icon: Icon(Icons.insights_outlined),
             label: 'Insights',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.menu_book_outlined),
+            label: 'Learn',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),

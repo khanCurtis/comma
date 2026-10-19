@@ -13,4 +13,12 @@ enum Mucus { dry, sticky, creamy, watery, eggWhite }
 
 enum TestResult { negative, positive, peak }
 
-enum SexActivity { none, protected, unprotected }
+/// Protection used during one sexual encounter.
+enum SexProtection {
+  unprotected,
+  condom,
+  withdrawal,
+
+  /// Any other method, or "protected" without details.
+  otherProtection,
+}

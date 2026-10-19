@@ -94,6 +94,28 @@ void main() {
       expect(await db.watchSymptoms(d(2026, 1, 1)).first, {'cramps': 3});
     });
 
+    test('several sex entries per day, ordered by time', () async {
+      await db.saveSexEntry(
+        SexEntriesCompanion.insert(
+          date: d(2026, 1, 1),
+          minuteOfDay: const Value(23 * 60),
+        ),
+      );
+      await db.saveSexEntry(
+        SexEntriesCompanion.insert(
+          date: d(2026, 1, 1),
+          minuteOfDay: const Value(8 * 60),
+        ),
+      );
+      await db.saveSexEntry(SexEntriesCompanion.insert(date: d(2026, 1, 2)));
+      final day1 = await db.watchSexEntries(d(2026, 1, 1), d(2026, 1, 1)).first;
+      expect(day1.map((e) => e.minuteOfDay), [480, 1380]);
+
+      await db.deleteSexEntry(day1.first.id);
+      final all = await db.watchSexEntries(d(2026, 1, 1), d(2026, 1, 31)).first;
+      expect(all, hasLength(2));
+    });
+
     test('wipe removes everything', () async {
       await db.setFlow(d(2026, 1, 1), FlowLevel.heavy);
       await db.setSetting('a', 'b');

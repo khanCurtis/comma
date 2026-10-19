@@ -78,15 +78,6 @@ class $DayLogsTable extends DayLogs with TableInfo<$DayLogsTable, DayLog> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   ).withConverter<TestResult?>($DayLogsTable.$converterpregnancyTestn);
-  @override
-  late final GeneratedColumnWithTypeConverter<SexActivity?, String> sex =
-      GeneratedColumn<String>(
-        'sex',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      ).withConverter<SexActivity?>($DayLogsTable.$convertersexn);
   static const VerificationMeta _noteMeta = const VerificationMeta('note');
   @override
   late final GeneratedColumn<String> note = GeneratedColumn<String>(
@@ -105,7 +96,6 @@ class $DayLogsTable extends DayLogs with TableInfo<$DayLogsTable, DayLog> {
     bbtDisturbed,
     lhTest,
     pregnancyTest,
-    sex,
     note,
   ];
   @override
@@ -194,12 +184,6 @@ class $DayLogsTable extends DayLogs with TableInfo<$DayLogsTable, DayLog> {
           data['${effectivePrefix}pregnancy_test'],
         ),
       ),
-      sex: $DayLogsTable.$convertersexn.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}sex'],
-        ),
-      ),
       note: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}note'],
@@ -230,10 +214,6 @@ class $DayLogsTable extends DayLogs with TableInfo<$DayLogsTable, DayLog> {
   $converterpregnancyTestn = JsonTypeConverter2.asNullable(
     $converterpregnancyTest,
   );
-  static JsonTypeConverter2<SexActivity, String, String> $convertersex =
-      const EnumNameConverter<SexActivity>(SexActivity.values);
-  static JsonTypeConverter2<SexActivity?, String?, String?> $convertersexn =
-      JsonTypeConverter2.asNullable($convertersex);
 }
 
 class DayLog extends DataClass implements Insertable<DayLog> {
@@ -244,7 +224,6 @@ class DayLog extends DataClass implements Insertable<DayLog> {
   final bool bbtDisturbed;
   final TestResult? lhTest;
   final TestResult? pregnancyTest;
-  final SexActivity? sex;
   final String? note;
   const DayLog({
     required this.date,
@@ -254,7 +233,6 @@ class DayLog extends DataClass implements Insertable<DayLog> {
     required this.bbtDisturbed,
     this.lhTest,
     this.pregnancyTest,
-    this.sex,
     this.note,
   });
   @override
@@ -283,9 +261,6 @@ class DayLog extends DataClass implements Insertable<DayLog> {
         $DayLogsTable.$converterpregnancyTestn.toSql(pregnancyTest),
       );
     }
-    if (!nullToAbsent || sex != null) {
-      map['sex'] = Variable<String>($DayLogsTable.$convertersexn.toSql(sex));
-    }
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
     }
@@ -307,7 +282,6 @@ class DayLog extends DataClass implements Insertable<DayLog> {
       pregnancyTest: pregnancyTest == null && nullToAbsent
           ? const Value.absent()
           : Value(pregnancyTest),
-      sex: sex == null && nullToAbsent ? const Value.absent() : Value(sex),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
     );
   }
@@ -333,9 +307,6 @@ class DayLog extends DataClass implements Insertable<DayLog> {
       pregnancyTest: $DayLogsTable.$converterpregnancyTestn.fromJson(
         serializer.fromJson<String?>(json['pregnancyTest']),
       ),
-      sex: $DayLogsTable.$convertersexn.fromJson(
-        serializer.fromJson<String?>(json['sex']),
-      ),
       note: serializer.fromJson<String?>(json['note']),
     );
   }
@@ -358,9 +329,6 @@ class DayLog extends DataClass implements Insertable<DayLog> {
       'pregnancyTest': serializer.toJson<String?>(
         $DayLogsTable.$converterpregnancyTestn.toJson(pregnancyTest),
       ),
-      'sex': serializer.toJson<String?>(
-        $DayLogsTable.$convertersexn.toJson(sex),
-      ),
       'note': serializer.toJson<String?>(note),
     };
   }
@@ -373,7 +341,6 @@ class DayLog extends DataClass implements Insertable<DayLog> {
     bool? bbtDisturbed,
     Value<TestResult?> lhTest = const Value.absent(),
     Value<TestResult?> pregnancyTest = const Value.absent(),
-    Value<SexActivity?> sex = const Value.absent(),
     Value<String?> note = const Value.absent(),
   }) => DayLog(
     date: date ?? this.date,
@@ -385,7 +352,6 @@ class DayLog extends DataClass implements Insertable<DayLog> {
     pregnancyTest: pregnancyTest.present
         ? pregnancyTest.value
         : this.pregnancyTest,
-    sex: sex.present ? sex.value : this.sex,
     note: note.present ? note.value : this.note,
   );
   DayLog copyWithCompanion(DayLogsCompanion data) {
@@ -401,7 +367,6 @@ class DayLog extends DataClass implements Insertable<DayLog> {
       pregnancyTest: data.pregnancyTest.present
           ? data.pregnancyTest.value
           : this.pregnancyTest,
-      sex: data.sex.present ? data.sex.value : this.sex,
       note: data.note.present ? data.note.value : this.note,
     );
   }
@@ -416,7 +381,6 @@ class DayLog extends DataClass implements Insertable<DayLog> {
           ..write('bbtDisturbed: $bbtDisturbed, ')
           ..write('lhTest: $lhTest, ')
           ..write('pregnancyTest: $pregnancyTest, ')
-          ..write('sex: $sex, ')
           ..write('note: $note')
           ..write(')'))
         .toString();
@@ -431,7 +395,6 @@ class DayLog extends DataClass implements Insertable<DayLog> {
     bbtDisturbed,
     lhTest,
     pregnancyTest,
-    sex,
     note,
   );
   @override
@@ -445,7 +408,6 @@ class DayLog extends DataClass implements Insertable<DayLog> {
           other.bbtDisturbed == this.bbtDisturbed &&
           other.lhTest == this.lhTest &&
           other.pregnancyTest == this.pregnancyTest &&
-          other.sex == this.sex &&
           other.note == this.note);
 }
 
@@ -457,7 +419,6 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
   final Value<bool> bbtDisturbed;
   final Value<TestResult?> lhTest;
   final Value<TestResult?> pregnancyTest;
-  final Value<SexActivity?> sex;
   final Value<String?> note;
   final Value<int> rowid;
   const DayLogsCompanion({
@@ -468,7 +429,6 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
     this.bbtDisturbed = const Value.absent(),
     this.lhTest = const Value.absent(),
     this.pregnancyTest = const Value.absent(),
-    this.sex = const Value.absent(),
     this.note = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -480,7 +440,6 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
     this.bbtDisturbed = const Value.absent(),
     this.lhTest = const Value.absent(),
     this.pregnancyTest = const Value.absent(),
-    this.sex = const Value.absent(),
     this.note = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : date = Value(date);
@@ -492,7 +451,6 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
     Expression<bool>? bbtDisturbed,
     Expression<String>? lhTest,
     Expression<String>? pregnancyTest,
-    Expression<String>? sex,
     Expression<String>? note,
     Expression<int>? rowid,
   }) {
@@ -504,7 +462,6 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
       if (bbtDisturbed != null) 'bbt_disturbed': bbtDisturbed,
       if (lhTest != null) 'lh_test': lhTest,
       if (pregnancyTest != null) 'pregnancy_test': pregnancyTest,
-      if (sex != null) 'sex': sex,
       if (note != null) 'note': note,
       if (rowid != null) 'rowid': rowid,
     });
@@ -518,7 +475,6 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
     Value<bool>? bbtDisturbed,
     Value<TestResult?>? lhTest,
     Value<TestResult?>? pregnancyTest,
-    Value<SexActivity?>? sex,
     Value<String?>? note,
     Value<int>? rowid,
   }) {
@@ -530,7 +486,6 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
       bbtDisturbed: bbtDisturbed ?? this.bbtDisturbed,
       lhTest: lhTest ?? this.lhTest,
       pregnancyTest: pregnancyTest ?? this.pregnancyTest,
-      sex: sex ?? this.sex,
       note: note ?? this.note,
       rowid: rowid ?? this.rowid,
     );
@@ -568,11 +523,6 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
         $DayLogsTable.$converterpregnancyTestn.toSql(pregnancyTest.value),
       );
     }
-    if (sex.present) {
-      map['sex'] = Variable<String>(
-        $DayLogsTable.$convertersexn.toSql(sex.value),
-      );
-    }
     if (note.present) {
       map['note'] = Variable<String>(note.value);
     }
@@ -592,7 +542,6 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
           ..write('bbtDisturbed: $bbtDisturbed, ')
           ..write('lhTest: $lhTest, ')
           ..write('pregnancyTest: $pregnancyTest, ')
-          ..write('sex: $sex, ')
           ..write('note: $note, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -862,6 +811,423 @@ class SymptomEntriesCompanion extends UpdateCompanion<SymptomEntry> {
   }
 }
 
+class $SexEntriesTable extends SexEntries
+    with TableInfo<$SexEntriesTable, SexEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SexEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _minuteOfDayMeta = const VerificationMeta(
+    'minuteOfDay',
+  );
+  @override
+  late final GeneratedColumn<int> minuteOfDay = GeneratedColumn<int>(
+    'minute_of_day',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SexProtection?, String>
+  protection = GeneratedColumn<String>(
+    'protection',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  ).withConverter<SexProtection?>($SexEntriesTable.$converterprotectionn);
+  static const VerificationMeta _orgasmMeta = const VerificationMeta('orgasm');
+  @override
+  late final GeneratedColumn<bool> orgasm = GeneratedColumn<bool>(
+    'orgasm',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("orgasm" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    date,
+    minuteOfDay,
+    protection,
+    orgasm,
+    note,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sex_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SexEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('minute_of_day')) {
+      context.handle(
+        _minuteOfDayMeta,
+        minuteOfDay.isAcceptableOrUnknown(
+          data['minute_of_day']!,
+          _minuteOfDayMeta,
+        ),
+      );
+    }
+    if (data.containsKey('orgasm')) {
+      context.handle(
+        _orgasmMeta,
+        orgasm.isAcceptableOrUnknown(data['orgasm']!, _orgasmMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SexEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SexEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      minuteOfDay: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}minute_of_day'],
+      ),
+      protection: $SexEntriesTable.$converterprotectionn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}protection'],
+        ),
+      ),
+      orgasm: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}orgasm'],
+      ),
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+    );
+  }
+
+  @override
+  $SexEntriesTable createAlias(String alias) {
+    return $SexEntriesTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<SexProtection, String, String>
+  $converterprotection = const EnumNameConverter<SexProtection>(
+    SexProtection.values,
+  );
+  static JsonTypeConverter2<SexProtection?, String?, String?>
+  $converterprotectionn = JsonTypeConverter2.asNullable($converterprotection);
+}
+
+class SexEntry extends DataClass implements Insertable<SexEntry> {
+  final int id;
+  final DateTime date;
+
+  /// Minutes after midnight, if the user recorded a time.
+  final int? minuteOfDay;
+  final SexProtection? protection;
+  final bool? orgasm;
+  final String? note;
+  const SexEntry({
+    required this.id,
+    required this.date,
+    this.minuteOfDay,
+    this.protection,
+    this.orgasm,
+    this.note,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['date'] = Variable<DateTime>(date);
+    if (!nullToAbsent || minuteOfDay != null) {
+      map['minute_of_day'] = Variable<int>(minuteOfDay);
+    }
+    if (!nullToAbsent || protection != null) {
+      map['protection'] = Variable<String>(
+        $SexEntriesTable.$converterprotectionn.toSql(protection),
+      );
+    }
+    if (!nullToAbsent || orgasm != null) {
+      map['orgasm'] = Variable<bool>(orgasm);
+    }
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    return map;
+  }
+
+  SexEntriesCompanion toCompanion(bool nullToAbsent) {
+    return SexEntriesCompanion(
+      id: Value(id),
+      date: Value(date),
+      minuteOfDay: minuteOfDay == null && nullToAbsent
+          ? const Value.absent()
+          : Value(minuteOfDay),
+      protection: protection == null && nullToAbsent
+          ? const Value.absent()
+          : Value(protection),
+      orgasm: orgasm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(orgasm),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+    );
+  }
+
+  factory SexEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SexEntry(
+      id: serializer.fromJson<int>(json['id']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      minuteOfDay: serializer.fromJson<int?>(json['minuteOfDay']),
+      protection: $SexEntriesTable.$converterprotectionn.fromJson(
+        serializer.fromJson<String?>(json['protection']),
+      ),
+      orgasm: serializer.fromJson<bool?>(json['orgasm']),
+      note: serializer.fromJson<String?>(json['note']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'date': serializer.toJson<DateTime>(date),
+      'minuteOfDay': serializer.toJson<int?>(minuteOfDay),
+      'protection': serializer.toJson<String?>(
+        $SexEntriesTable.$converterprotectionn.toJson(protection),
+      ),
+      'orgasm': serializer.toJson<bool?>(orgasm),
+      'note': serializer.toJson<String?>(note),
+    };
+  }
+
+  SexEntry copyWith({
+    int? id,
+    DateTime? date,
+    Value<int?> minuteOfDay = const Value.absent(),
+    Value<SexProtection?> protection = const Value.absent(),
+    Value<bool?> orgasm = const Value.absent(),
+    Value<String?> note = const Value.absent(),
+  }) => SexEntry(
+    id: id ?? this.id,
+    date: date ?? this.date,
+    minuteOfDay: minuteOfDay.present ? minuteOfDay.value : this.minuteOfDay,
+    protection: protection.present ? protection.value : this.protection,
+    orgasm: orgasm.present ? orgasm.value : this.orgasm,
+    note: note.present ? note.value : this.note,
+  );
+  SexEntry copyWithCompanion(SexEntriesCompanion data) {
+    return SexEntry(
+      id: data.id.present ? data.id.value : this.id,
+      date: data.date.present ? data.date.value : this.date,
+      minuteOfDay: data.minuteOfDay.present
+          ? data.minuteOfDay.value
+          : this.minuteOfDay,
+      protection: data.protection.present
+          ? data.protection.value
+          : this.protection,
+      orgasm: data.orgasm.present ? data.orgasm.value : this.orgasm,
+      note: data.note.present ? data.note.value : this.note,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SexEntry(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('minuteOfDay: $minuteOfDay, ')
+          ..write('protection: $protection, ')
+          ..write('orgasm: $orgasm, ')
+          ..write('note: $note')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, date, minuteOfDay, protection, orgasm, note);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SexEntry &&
+          other.id == this.id &&
+          other.date == this.date &&
+          other.minuteOfDay == this.minuteOfDay &&
+          other.protection == this.protection &&
+          other.orgasm == this.orgasm &&
+          other.note == this.note);
+}
+
+class SexEntriesCompanion extends UpdateCompanion<SexEntry> {
+  final Value<int> id;
+  final Value<DateTime> date;
+  final Value<int?> minuteOfDay;
+  final Value<SexProtection?> protection;
+  final Value<bool?> orgasm;
+  final Value<String?> note;
+  const SexEntriesCompanion({
+    this.id = const Value.absent(),
+    this.date = const Value.absent(),
+    this.minuteOfDay = const Value.absent(),
+    this.protection = const Value.absent(),
+    this.orgasm = const Value.absent(),
+    this.note = const Value.absent(),
+  });
+  SexEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required DateTime date,
+    this.minuteOfDay = const Value.absent(),
+    this.protection = const Value.absent(),
+    this.orgasm = const Value.absent(),
+    this.note = const Value.absent(),
+  }) : date = Value(date);
+  static Insertable<SexEntry> custom({
+    Expression<int>? id,
+    Expression<DateTime>? date,
+    Expression<int>? minuteOfDay,
+    Expression<String>? protection,
+    Expression<bool>? orgasm,
+    Expression<String>? note,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (date != null) 'date': date,
+      if (minuteOfDay != null) 'minute_of_day': minuteOfDay,
+      if (protection != null) 'protection': protection,
+      if (orgasm != null) 'orgasm': orgasm,
+      if (note != null) 'note': note,
+    });
+  }
+
+  SexEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<DateTime>? date,
+    Value<int?>? minuteOfDay,
+    Value<SexProtection?>? protection,
+    Value<bool?>? orgasm,
+    Value<String?>? note,
+  }) {
+    return SexEntriesCompanion(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      minuteOfDay: minuteOfDay ?? this.minuteOfDay,
+      protection: protection ?? this.protection,
+      orgasm: orgasm ?? this.orgasm,
+      note: note ?? this.note,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (minuteOfDay.present) {
+      map['minute_of_day'] = Variable<int>(minuteOfDay.value);
+    }
+    if (protection.present) {
+      map['protection'] = Variable<String>(
+        $SexEntriesTable.$converterprotectionn.toSql(protection.value),
+      );
+    }
+    if (orgasm.present) {
+      map['orgasm'] = Variable<bool>(orgasm.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SexEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('minuteOfDay: $minuteOfDay, ')
+          ..write('protection: $protection, ')
+          ..write('orgasm: $orgasm, ')
+          ..write('note: $note')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -1072,6 +1438,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $DayLogsTable dayLogs = $DayLogsTable(this);
   late final $SymptomEntriesTable symptomEntries = $SymptomEntriesTable(this);
+  late final $SexEntriesTable sexEntries = $SexEntriesTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -1080,6 +1447,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     dayLogs,
     symptomEntries,
+    sexEntries,
     settings,
   ];
   @override
@@ -1095,7 +1463,6 @@ typedef $$DayLogsTableCreateCompanionBuilder = DayLogsCompanion Function({
   Value<bool> bbtDisturbed,
   Value<TestResult?> lhTest,
   Value<TestResult?> pregnancyTest,
-  Value<SexActivity?> sex,
   Value<String?> note,
   Value<int> rowid,
 });
@@ -1107,7 +1474,6 @@ typedef $$DayLogsTableUpdateCompanionBuilder = DayLogsCompanion Function({
   Value<bool> bbtDisturbed,
   Value<TestResult?> lhTest,
   Value<TestResult?> pregnancyTest,
-  Value<SexActivity?> sex,
   Value<String?> note,
   Value<int> rowid,
 });
@@ -1160,12 +1526,6 @@ class $$DayLogsTableFilterComposer
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
-  ColumnWithTypeConverterFilters<SexActivity?, SexActivity, String> get sex =>
-      $composableBuilder(
-        column: $table.sex,
-        builder: (column) => ColumnWithTypeConverterFilters(column),
-      );
-
   ColumnFilters<String> get note => $composableBuilder(
     column: $table.note,
     builder: (column) => ColumnFilters(column),
@@ -1216,11 +1576,6 @@ class $$DayLogsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get sex => $composableBuilder(
-    column: $table.sex,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get note => $composableBuilder(
     column: $table.note,
     builder: (column) => ColumnOrderings(column),
@@ -1262,9 +1617,6 @@ class $$DayLogsTableAnnotationComposer
         builder: (column) => column,
       );
 
-  GeneratedColumnWithTypeConverter<SexActivity?, String> get sex =>
-      $composableBuilder(column: $table.sex, builder: (column) => column);
-
   GeneratedColumn<String> get note =>
       $composableBuilder(column: $table.note, builder: (column) => column);
 }
@@ -1304,7 +1656,6 @@ class $$DayLogsTableTableManager
                 Value<bool> bbtDisturbed = const Value.absent(),
                 Value<TestResult?> lhTest = const Value.absent(),
                 Value<TestResult?> pregnancyTest = const Value.absent(),
-                Value<SexActivity?> sex = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DayLogsCompanion(
@@ -1315,7 +1666,6 @@ class $$DayLogsTableTableManager
                 bbtDisturbed: bbtDisturbed,
                 lhTest: lhTest,
                 pregnancyTest: pregnancyTest,
-                sex: sex,
                 note: note,
                 rowid: rowid,
               ),
@@ -1328,7 +1678,6 @@ class $$DayLogsTableTableManager
                 Value<bool> bbtDisturbed = const Value.absent(),
                 Value<TestResult?> lhTest = const Value.absent(),
                 Value<TestResult?> pregnancyTest = const Value.absent(),
-                Value<SexActivity?> sex = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DayLogsCompanion.insert(
@@ -1339,7 +1688,6 @@ class $$DayLogsTableTableManager
                 bbtDisturbed: bbtDisturbed,
                 lhTest: lhTest,
                 pregnancyTest: pregnancyTest,
-                sex: sex,
                 note: note,
                 rowid: rowid,
               ),
@@ -1547,6 +1895,226 @@ typedef $$SymptomEntriesTableProcessedTableManager =
       SymptomEntry,
       PrefetchHooks Function()
     >;
+typedef $$SexEntriesTableCreateCompanionBuilder = SexEntriesCompanion Function({
+  Value<int> id,
+  required DateTime date,
+  Value<int?> minuteOfDay,
+  Value<SexProtection?> protection,
+  Value<bool?> orgasm,
+  Value<String?> note,
+});
+typedef $$SexEntriesTableUpdateCompanionBuilder = SexEntriesCompanion Function({
+  Value<int> id,
+  Value<DateTime> date,
+  Value<int?> minuteOfDay,
+  Value<SexProtection?> protection,
+  Value<bool?> orgasm,
+  Value<String?> note,
+});
+
+class $$SexEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $SexEntriesTable> {
+  $$SexEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get minuteOfDay => $composableBuilder(
+    column: $table.minuteOfDay,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SexProtection?, SexProtection, String>
+  get protection => $composableBuilder(
+    column: $table.protection,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<bool> get orgasm => $composableBuilder(
+    column: $table.orgasm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SexEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SexEntriesTable> {
+  $$SexEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get minuteOfDay => $composableBuilder(
+    column: $table.minuteOfDay,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get protection => $composableBuilder(
+    column: $table.protection,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get orgasm => $composableBuilder(
+    column: $table.orgasm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SexEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SexEntriesTable> {
+  $$SexEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<int> get minuteOfDay => $composableBuilder(
+    column: $table.minuteOfDay,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<SexProtection?, String> get protection =>
+      $composableBuilder(
+        column: $table.protection,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<bool> get orgasm =>
+      $composableBuilder(column: $table.orgasm, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+}
+
+class $$SexEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SexEntriesTable,
+          SexEntry,
+          $$SexEntriesTableFilterComposer,
+          $$SexEntriesTableOrderingComposer,
+          $$SexEntriesTableAnnotationComposer,
+          $$SexEntriesTableCreateCompanionBuilder,
+          $$SexEntriesTableUpdateCompanionBuilder,
+          (SexEntry, BaseReferences<_$AppDatabase, $SexEntriesTable, SexEntry>),
+          SexEntry,
+          PrefetchHooks Function()
+        > {
+  $$SexEntriesTableTableManager(_$AppDatabase db, $SexEntriesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SexEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SexEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SexEntriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<int?> minuteOfDay = const Value.absent(),
+                Value<SexProtection?> protection = const Value.absent(),
+                Value<bool?> orgasm = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+              }) => SexEntriesCompanion(
+                id: id,
+                date: date,
+                minuteOfDay: minuteOfDay,
+                protection: protection,
+                orgasm: orgasm,
+                note: note,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required DateTime date,
+                Value<int?> minuteOfDay = const Value.absent(),
+                Value<SexProtection?> protection = const Value.absent(),
+                Value<bool?> orgasm = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+              }) => SexEntriesCompanion.insert(
+                id: id,
+                date: date,
+                minuteOfDay: minuteOfDay,
+                protection: protection,
+                orgasm: orgasm,
+                note: note,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SexEntriesTable, SexEntry>(table),
+                  BaseReferences<_$AppDatabase, $SexEntriesTable, SexEntry>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SexEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SexEntriesTable,
+      SexEntry,
+      $$SexEntriesTableFilterComposer,
+      $$SexEntriesTableOrderingComposer,
+      $$SexEntriesTableAnnotationComposer,
+      $$SexEntriesTableCreateCompanionBuilder,
+      $$SexEntriesTableUpdateCompanionBuilder,
+      (SexEntry, BaseReferences<_$AppDatabase, $SexEntriesTable, SexEntry>),
+      SexEntry,
+      PrefetchHooks Function()
+    >;
 typedef $$SettingsTableCreateCompanionBuilder = SettingsCompanion Function({
   required String key,
   required String value,
@@ -1689,6 +2257,8 @@ class $AppDatabaseManager {
       $$DayLogsTableTableManager(_db, _db.dayLogs);
   $$SymptomEntriesTableTableManager get symptomEntries =>
       $$SymptomEntriesTableTableManager(_db, _db.symptomEntries);
+  $$SexEntriesTableTableManager get sexEntries =>
+      $$SexEntriesTableTableManager(_db, _db.sexEntries);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
 }

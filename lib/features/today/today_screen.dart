@@ -7,7 +7,12 @@ import '../../app/theme.dart';
 import '../../domain/engine/predictor.dart';
 import '../../domain/engine/status.dart';
 import '../../domain/models/day_log.dart';
+import '../../domain/dates.dart';
+import '../learn/articles.dart';
+import '../learn/learn_screen.dart';
 import '../log/day_log_sheet.dart';
+import '../sex/sex_entry_sheet.dart';
+import 'tips.dart';
 
 class TodayScreen extends ConsumerWidget {
   const TodayScreen({super.key});
@@ -22,6 +27,14 @@ class TodayScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final colors = CycleColors.of(context);
     final fmt = DateFormat.MMMd();
+    final recentSex =
+        ref.watch(sexEntriesProvider((addDays(today, -4), today))).value ??
+        const [];
+    final sexToday = recentSex.where((e) => e.date == today).length;
+    final recentUnprotected = recentSex.any(
+      (e) => e.protection == SexProtection.unprotected,
+    );
+    final tip = tipFor(status);
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -102,6 +115,31 @@ class TodayScreen extends ConsumerWidget {
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        FilledButton.tonalIcon(
+          icon: const Icon(Icons.favorite_outline),
+          label: Text(sexToday == 0 ? 'Log sex' : 'Log sex ($sexToday today)'),
+          onPressed: () => showSexEntrySheet(context, day: today),
+        ),
+        if (recentUnprotected) ...[
+          const SizedBox(height: 16),
+          _TipCard(
+            icon: Icons.health_and_safety_outlined,
+            text:
+                'You logged unprotected sex recently. Emergency '
+                'contraception and STI testing info is here if you need it.',
+            onTap: () =>
+                openArticle(context, ArticleIds.emergencyContraception),
+          ),
+        ],
+        if (tip != null) ...[
+          const SizedBox(height: 16),
+          _TipCard(
+            icon: Icons.lightbulb_outline,
+            text: tip.text,
+            onTap: () => openArticle(context, tip.articleId),
+          ),
+        ],
         if (next != null) ...[
           const SizedBox(height: 32),
           Card(
@@ -158,6 +196,24 @@ class TodayScreen extends ConsumerWidget {
     -1 => 'Period 1 day late',
     _ => 'Period ${-days} days late',
   };
+}
+
+class _TipCard extends StatelessWidget {
+  const _TipCard({required this.icon, required this.text, required this.onTap});
+
+  final IconData icon;
+  final String text;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    child: ListTile(
+      leading: Icon(icon),
+      title: Text(text),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
+    ),
+  );
 }
 
 class _ConfidenceChip extends StatelessWidget {

@@ -21,11 +21,19 @@ Future<AppDatabase> seeded() async {
       mucus: const Value(Mucus.eggWhite),
       bbt: const Value(36.45),
       lhTest: const Value(TestResult.peak),
-      sex: const Value(SexActivity.protected),
       note: const Value('Notes with "quotes" and émojis 🌙'),
     ),
   );
   await db.setSymptom(d(2026, 1, 1), 'cramps', 3);
+  await db.saveSexEntry(
+    SexEntriesCompanion.insert(
+      date: d(2026, 1, 14),
+      minuteOfDay: const Value(22 * 60 + 30),
+      protection: const Value(SexProtection.condom),
+      orgasm: const Value(true),
+    ),
+  );
+  await db.saveSexEntry(SexEntriesCompanion.insert(date: d(2026, 1, 14)));
   await db.setSetting('onboarded', 'true');
   return db;
 }
@@ -53,6 +61,10 @@ void main() {
       await source.select(source.dayLogs).get(),
     );
     expect(await target.watchSymptoms(d(2026, 1, 1)).first, {'cramps': 3});
+    expect(
+      await target.select(target.sexEntries).get(),
+      await source.select(source.sexEntries).get(),
+    );
     expect(await target.watchSetting('onboarded').first, 'true');
   });
 
@@ -103,6 +115,27 @@ void main() {
     expect(json['dayLogs'], contains(containsPair('flow', 'heavy')));
   });
 
+  test('version 1 backups convert day-level sex to entries', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    await importBackup(db, {
+      'format': 'comma-backup',
+      'version': 1,
+      'dayLogs': [
+        {'date': '2026-01-01', 'flow': 'none', 'sex': 'unprotected'},
+        {'date': '2026-01-02', 'flow': 'light', 'sex': 'protected'},
+        {'date': '2026-01-03', 'flow': 'light', 'sex': 'none'},
+      ],
+      'symptomEntries': [],
+      'settings': {},
+    });
+    final entries = await db.select(db.sexEntries).get();
+    expect(entries.map((e) => (e.date, e.protection)), [
+      (d(2026, 1, 1), SexProtection.unprotected),
+      (d(2026, 1, 2), SexProtection.otherProtection),
+    ]);
+  });
+
   test('garbage and newer versions are rejected', () async {
     expect(
       () => codec.decode(utf8.encode('not json')),
@@ -121,7 +154,8 @@ void main() {
     addTearDown(db.close);
     final bad = {
       'format': 'comma-backup',
-      'version': 1,
+      'version': 2,
+      'sexEntries': [],
       'dayLogs': [
         {'date': '2026-02-01', 'flow': 'torrential'},
       ],

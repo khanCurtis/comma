@@ -43,7 +43,47 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Day 1'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Next period'), 200);
     expect(find.text('Next period'), findsOneWidget);
+    await tester.drag(find.byType(ListView).first, const Offset(0, 2000));
+    await tester.pumpAndSettle();
+
+    // Log sex twice on the same day; unprotected shows a help prompt.
+    final logSex = find.widgetWithText(FilledButton, 'Log sex');
+    await tester.scrollUntilVisible(logSex, 200);
+    await tester.tap(logSex);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Unprotected'));
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(find.text('Learn more'), findsOneWidget);
+    expect(find.textContaining('unprotected sex recently'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Log sex (1 today)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Condom'));
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(find.text('Log sex (2 today)'), findsOneWidget);
+    expect(await db.select(db.sexEntries).get(), hasLength(2));
+    ScaffoldMessenger.of(tester.element(find.byType(NavigationBar)))
+        .clearSnackBars();
+    await tester.pumpAndSettle();
+
+    // Learn tab, an article, and the help page.
+    await tester.tap(find.text('Learn'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Easing period pain'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Sources'), 300);
+    expect(find.text('Sources'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Get help'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('emergency number'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
 
     for (final tab in ['Calendar', 'Insights', 'Settings']) {
       await tester.tap(find.text(tab));

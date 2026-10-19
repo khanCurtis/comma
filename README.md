@@ -25,7 +25,7 @@ Cycle data is some of the most sensitive health data a person can have. Many pop
 - Cervical mucus and discharge
 - Basal body temperature (BBT)
 - Ovulation (LH) and pregnancy test results
-- Sexual activity (protected or unprotected) and libido
+- Sex: log each encounter separately, with optional time, protection used, orgasm and notes
 - Medications and birth control, with pill reminders
 - Sleep, weight and free-text notes
 - Your own custom tags
@@ -44,6 +44,12 @@ Cycle data is some of the most sensitive health data a person can have. Many pop
 - Pregnancy (week-by-week, with due date)
 - Postpartum and breastfeeding
 - Perimenopause
+
+### Learn and get help
+- Short, sourced articles on period pain, period products, heavy periods, PMS/PMDD, when to see a doctor, emergency contraception, STI testing, contraception, pain during sex, sex drive, consent, the fertile window and pregnancy tests
+- Tips on the Today screen based on where you are in your cycle
+- After you log unprotected sex, a gentle pointer to emergency contraception and STI testing information
+- A "Get help" page with emergency numbers and confidential support lines (US, UK, Canada, Australia, plus a worldwide directory). Calls and links open in your phone's own apps, and Comma sends nothing anywhere.
 
 ### Reports for doctors
 - A clean, printable **PDF report** for a chosen date range: cycle history table, cycle length chart, period length and flow summary, symptom frequency, medications and flagged irregularities

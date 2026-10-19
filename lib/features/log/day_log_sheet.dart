@@ -8,6 +8,7 @@ import '../../data/db/database.dart';
 import '../../domain/dates.dart';
 import '../../domain/models/day_log.dart';
 import '../../domain/models/symptoms.dart';
+import '../sex/sex_entry_sheet.dart';
 
 final _dayProvider = StreamProvider.family<DayLog?, DateTime>(
   (ref, day) => ref.watch(databaseProvider).watchDay(day),
@@ -106,23 +107,7 @@ class DayLogSheet extends ConsumerWidget {
               ],
             ),
           ),
-          section(
-            'Sex',
-            Wrap(
-              spacing: 8,
-              children: [
-                for (final s in SexActivity.values.skip(1))
-                  ChoiceChip(
-                    label: Text(
-                      s == SexActivity.protected ? 'Protected' : 'Unprotected',
-                    ),
-                    selected: log?.sex == s,
-                    onSelected: (on) =>
-                        save(DayLogsCompanion(sex: Value(on ? s : null))),
-                  ),
-              ],
-            ),
-          ),
+          section('Sex', SexEntriesList(day: day)),
           section(
             'Notes',
             _NoteField(

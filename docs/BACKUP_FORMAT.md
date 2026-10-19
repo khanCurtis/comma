@@ -7,7 +7,7 @@ Comma backups (`.comma` files) are UTF-8 JSON. This document lets anyone recover
 ```json
 {
   "format": "comma-backup",
-  "version": 1,
+  "version": 2,
   "exportedAt": "2026-10-19T14:03:00.000Z",
   "dayLogs": [
     {
@@ -18,12 +18,14 @@ Comma backups (`.comma` files) are UTF-8 JSON. This document lets anyone recover
       "bbtDisturbed": true,
       "lhTest": "positive",
       "pregnancyTest": "negative",
-      "sex": "protected",
       "note": "free text"
     }
   ],
   "symptomEntries": [
     { "date": "2026-10-01", "symptom": "cramps", "severity": 2 }
+  ],
+  "sexEntries": [
+    { "date": "2026-10-14", "minuteOfDay": 1350, "protection": "condom", "orgasm": true, "note": "free text" }
   ],
   "settings": { "default_cycle_length": "28" }
 }
@@ -34,7 +36,9 @@ Comma backups (`.comma` files) are UTF-8 JSON. This document lets anyone recover
 - `flow` is one of: `none`, `spotting`, `light`, `medium`, `heavy`.
 - `mucus` is one of: `dry`, `sticky`, `creamy`, `watery`, `eggWhite`.
 - `lhTest` and `pregnancyTest` are one of: `negative`, `positive`, `peak`.
-- `sex` is one of: `none`, `protected`, `unprotected`.
+- `sexEntries` holds one object per encounter. Several can share a date, and only `date` is required.
+  - `minuteOfDay` is minutes after midnight (1350 = 22:30).
+  - `protection` is one of: `unprotected`, `condom`, `withdrawal`, `otherProtection`.
 - `bbt` is in °C.
 - `symptom` keys are listed in `lib/domain/models/symptoms.dart`. Moods start with `mood.`, and custom entries start with `custom.`.
 
@@ -71,5 +75,10 @@ print(json.dumps(json.loads(plain), indent=2))
 ```
 
 ## Versioning
+
+| Version | Change |
+|---|---|
+| 1 | Initial format. Each day log had an optional `sex` value: `none`, `protected` or `unprotected`. |
+| 2 | Sex moved to `sexEntries`, allowing several per day. Comma still imports version 1 files. |
 
 `version` goes up only when an older app couldn't read the new file correctly. The app refuses to import backups with a newer version than it understands, instead of losing data.

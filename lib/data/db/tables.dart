@@ -12,11 +12,22 @@ class DayLogs extends Table {
   BoolColumn get bbtDisturbed => boolean().withDefault(const Constant(false))();
   TextColumn get lhTest => textEnum<TestResult>().nullable()();
   TextColumn get pregnancyTest => textEnum<TestResult>().nullable()();
-  TextColumn get sex => textEnum<SexActivity>().nullable()();
   TextColumn get note => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {date};
+}
+
+/// One row per sexual encounter, so several can be logged on the same day.
+class SexEntries extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  DateTimeColumn get date => dateTime()();
+
+  /// Minutes after midnight, if the user recorded a time.
+  IntColumn get minuteOfDay => integer().nullable()();
+  TextColumn get protection => textEnum<SexProtection>().nullable()();
+  BoolColumn get orgasm => boolean().nullable()();
+  TextColumn get note => text().nullable()();
 }
 
 /// Symptoms and moods logged on a day, keyed by a stable identifier such as

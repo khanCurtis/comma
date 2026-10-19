@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/providers.dart';
+import '../../domain/dates.dart';
 import '../../domain/engine/irregularity.dart';
+import '../../domain/models/day_log.dart';
+import '../sex/sex_entry_sheet.dart';
 
 class InsightsScreen extends ConsumerWidget {
   const InsightsScreen({super.key});
@@ -15,6 +18,13 @@ class InsightsScreen extends ConsumerWidget {
     final flags = ref.watch(irregularitiesProvider);
     final text = Theme.of(context).textTheme;
     final fmt = DateFormat.yMMMd();
+    final today = ref.watch(todayProvider);
+    final sex =
+        ref.watch(sexEntriesProvider((addDays(today, -89), today))).value ??
+        const [];
+    final cycleStart = cycles.isEmpty ? null : cycles.last.start;
+    int countSince(DateTime from) =>
+        sex.where((e) => !e.date.isBefore(from)).length;
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -31,6 +41,22 @@ class InsightsScreen extends ConsumerWidget {
               _Stat('Cycles', '${stats.sampleSize}'),
             ],
           ),
+        if (sex.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          Text('Sex', style: text.titleMedium),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              if (cycleStart != null)
+                _Stat('This cycle', '${countSince(cycleStart)}'),
+              _Stat('Last 30 days', '${countSince(addDays(today, -29))}'),
+              _Stat(
+                'Unprotected (30 d)',
+                '${sex.where((e) => !e.date.isBefore(addDays(today, -29)) && e.protection == SexProtection.unprotected).length}',
+              ),
+            ],
+          ),
+        ],
         if (flags.isNotEmpty) ...[
           const SizedBox(height: 24),
           Text('Worth mentioning to a doctor', style: text.titleMedium),

@@ -8,6 +8,7 @@ import '../../domain/dates.dart';
 import '../../domain/engine/predictor.dart';
 import '../../domain/models/cycle.dart';
 import '../log/day_log_sheet.dart';
+import '../sex/sex_entry_sheet.dart';
 
 enum _DayKind { none, period, predictedPeriod, fertile, ovulation }
 
@@ -37,6 +38,19 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     final first = _month;
     final daysInMonth = DateTime.utc(first.year, first.month + 1, 0).day;
+    final sexDays = {
+      for (final e
+          in ref
+                  .watch(
+                    sexEntriesProvider((
+                      first,
+                      DateTime.utc(first.year, first.month, daysInMonth),
+                    )),
+                  )
+                  .value ??
+              const [])
+        e.date,
+    };
     final leading = (first.weekday + 6) % 7; // Monday first
     final weekdays = [
       for (var i = 0; i < 7; i++)
@@ -107,6 +121,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       ),
                       isToday:
                           DateTime.utc(first.year, first.month, d) == today,
+                      hasSex: sexDays.contains(
+                        DateTime.utc(first.year, first.month, d),
+                      ),
                       colors: colors,
                     ),
                 ],
@@ -123,6 +140,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             _Legend(color: colors.period, label: 'Predicted', outlined: true),
             _Legend(color: colors.fertile, label: 'Fertile'),
             _Legend(color: colors.ovulation, label: 'Ovulation'),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.favorite,
+                  size: 12,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 6),
+                const Text('Sex'),
+              ],
+            ),
           ],
         ),
       ],
@@ -158,12 +187,14 @@ class _DayCell extends StatelessWidget {
     required this.day,
     required this.kind,
     required this.isToday,
+    required this.hasSex,
     required this.colors,
   });
 
   final DateTime day;
   final _DayKind kind;
   final bool isToday;
+  final bool hasSex;
   final CycleColors colors;
 
   @override
@@ -193,14 +224,27 @@ class _DayCell extends StatelessWidget {
           onTap: day.isAfter(dateOnly(DateTime.now()))
               ? null
               : () => showDayLogSheet(context, day),
-          child: Center(
-            child: Text(
-              '${day.day}',
-              style: TextStyle(
-                color: fg,
-                fontWeight: isToday ? FontWeight.bold : null,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Text(
+                '${day.day}',
+                style: TextStyle(
+                  color: fg,
+                  fontWeight: isToday ? FontWeight.bold : null,
+                ),
               ),
-            ),
+              if (hasSex)
+                Positioned(
+                  bottom: 2,
+                  child: Icon(
+                    Icons.favorite,
+                    size: 9,
+                    color: fg ?? scheme.primary,
+                    semanticLabel: 'Sex logged',
+                  ),
+                ),
+            ],
           ),
         ),
       ),

@@ -2,16 +2,34 @@ import 'package:drift/drift.dart';
 
 import '../../domain/dates.dart';
 import '../../domain/models/day_log.dart';
+import 'database.steps.dart';
 import 'tables.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [DayLogs, SymptomEntries, Settings])
+@DriftDatabase(tables: [DayLogs, SymptomEntries, SexEntries, Settings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: stepByStep(
+      from1To2: (m, schema) async {
+        // Sex moved from one value per day to separate entries.
+        await m.createTable(schema.sexEntries);
+        await customStatement('''
+              INSERT INTO sex_entries (date, protection)
+              SELECT date, CASE sex WHEN 'unprotected' THEN 'unprotected'
+                                    ELSE 'otherProtection' END
+              FROM day_logs WHERE sex IN ('protected', 'unprotected')
+            ''');
+        await m.alterTable(TableMigration(schema.dayLogs));
+      },
+    ),
+  );
 
   Stream<List<DateTime>> watchBleedingDays() {
     final bleeding = [
@@ -65,6 +83,26 @@ class AppDatabase extends _$AppDatabase {
       );
     }
   }
+
+  Stream<List<SexEntry>> watchSexEntries(DateTime from, DateTime to) {
+    final query = select(sexEntries)
+      ..where((t) => t.date.isBetweenValues(dateOnly(from), dateOnly(to)))
+      ..orderBy([
+        (t) => OrderingTerm.asc(t.date),
+        (t) => OrderingTerm.asc(t.minuteOfDay, nulls: NullsOrder.first),
+        (t) => OrderingTerm.asc(t.id),
+      ]);
+    return query.watch();
+  }
+
+  /// Adds a new entry, or updates it when [entry] has an id.
+  Future<void> saveSexEntry(SexEntriesCompanion entry) => into(sexEntries)
+      .insertOnConflictUpdate(
+        entry.copyWith(date: Value(dateOnly(entry.date.value))),
+      );
+
+  Future<void> deleteSexEntry(int id) =>
+      (delete(sexEntries)..where((t) => t.id.equals(id))).go();
 
   Stream<String?> watchSetting(String key) =>
       (select(settings)..where((t) => t.key.equals(key)))
