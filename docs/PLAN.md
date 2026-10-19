@@ -89,10 +89,10 @@ Cycles are **derived** from DayLog flow plus the user's "period started" taps, t
 4. **BBT confirmation**: apply the "3 over 6" rule. Three consecutive temperatures that are each ≥0.2 °C above the highest of the previous 6 confirm ovulation on the day before the rise. Readings marked as disturbed are skipped.
 5. **LH**: ovulation is estimated 1 day after the first positive or peak result.
 6. **Fertile window**: estimated ovulation −5 to +1 days.
-7. **Irregularity flags** (doctor-relevant, based on ACOG guidance):
-   - Cycle < 21 or > 35 days
-   - Cycle-to-cycle variation > 7–9 days
-   - Period > 7 days
+7. **Irregularity flags** (doctor-relevant, based on FIGO System 1):
+   - Cycle < 24 or > 38 days
+   - Cycle-to-cycle variation > 9 days
+   - Period > 8 days
    - No period for 90+ days (when not pregnant)
    - Bleeding between periods
    - Heavy flow every hour for several hours
