@@ -34,6 +34,12 @@ Future<AppDatabase> seeded() async {
     ),
   );
   await db.saveSexEntry(SexEntriesCompanion.insert(date: d(2026, 1, 14)));
+  await db.saveSexEntry(
+    SexEntriesCompanion.insert(
+      date: d(2026, 1, 15),
+      kind: const Value(SexKind.solo),
+    ),
+  );
   await db.setSetting('onboarded', 'true');
   return db;
 }
@@ -134,6 +140,24 @@ void main() {
       (d(2026, 1, 1), SexProtection.unprotected),
       (d(2026, 1, 2), SexProtection.otherProtection),
     ]);
+  });
+
+  test('version 2 sex entries import as partnered', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    await importBackup(db, {
+      'format': 'comma-backup',
+      'version': 2,
+      'dayLogs': [],
+      'symptomEntries': [],
+      'sexEntries': [
+        {'date': '2026-01-01', 'protection': 'condom'},
+      ],
+      'settings': {},
+    });
+    final entry = (await db.select(db.sexEntries).get()).single;
+    expect(entry.kind, SexKind.partnered);
+    expect(entry.protection, SexProtection.condom);
   });
 
   test('garbage and newer versions are rejected', () async {

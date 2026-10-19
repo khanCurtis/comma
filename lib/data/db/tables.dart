@@ -18,13 +18,18 @@ class DayLogs extends Table {
   Set<Column> get primaryKey => {date};
 }
 
-/// One row per sexual encounter, so several can be logged on the same day.
+/// One row per sexual encounter or masturbation session, so several can be
+/// logged on the same day.
 class SexEntries extends Table {
   IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get date => dateTime()();
+  TextColumn get kind =>
+      textEnum<SexKind>().withDefault(Constant(SexKind.partnered.name))();
 
   /// Minutes after midnight, if the user recorded a time.
   IntColumn get minuteOfDay => integer().nullable()();
+
+  /// Only meaningful for partnered sex.
   TextColumn get protection => textEnum<SexProtection>().nullable()();
   BoolColumn get orgasm => boolean().nullable()();
   TextColumn get note => text().nullable()();

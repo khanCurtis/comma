@@ -25,7 +25,7 @@ Cycle data is some of the most sensitive health data a person can have. Many pop
 - Cervical mucus and discharge
 - Basal body temperature (BBT)
 - Ovulation (LH) and pregnancy test results
-- Sex: log each encounter separately, with optional time, protection used, orgasm and notes
+- Sexual activity: log partnered sex and masturbation separately, as many times a day as needed, with optional time, protection used (for partnered sex), orgasm and notes
 - Medications and birth control, with pill reminders
 - Sleep, weight and free-text notes
 - Your own custom tags

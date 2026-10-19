@@ -839,6 +839,16 @@ class $SexEntriesTable extends SexEntries
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  @override
+  late final GeneratedColumnWithTypeConverter<SexKind, String> kind =
+      GeneratedColumn<String>(
+        'kind',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(SexKind.partnered.name),
+      ).withConverter<SexKind>($SexEntriesTable.$converterkind);
   static const VerificationMeta _minuteOfDayMeta = const VerificationMeta(
     'minuteOfDay',
   );
@@ -884,6 +894,7 @@ class $SexEntriesTable extends SexEntries
   List<GeneratedColumn> get $columns => [
     id,
     date,
+    kind,
     minuteOfDay,
     protection,
     orgasm,
@@ -950,6 +961,12 @@ class $SexEntriesTable extends SexEntries
         DriftSqlType.dateTime,
         data['${effectivePrefix}date'],
       )!,
+      kind: $SexEntriesTable.$converterkind.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}kind'],
+        )!,
+      ),
       minuteOfDay: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}minute_of_day'],
@@ -976,6 +993,8 @@ class $SexEntriesTable extends SexEntries
     return $SexEntriesTable(attachedDatabase, alias);
   }
 
+  static JsonTypeConverter2<SexKind, String, String> $converterkind =
+      const EnumNameConverter<SexKind>(SexKind.values);
   static JsonTypeConverter2<SexProtection, String, String>
   $converterprotection = const EnumNameConverter<SexProtection>(
     SexProtection.values,
@@ -987,15 +1006,19 @@ class $SexEntriesTable extends SexEntries
 class SexEntry extends DataClass implements Insertable<SexEntry> {
   final int id;
   final DateTime date;
+  final SexKind kind;
 
   /// Minutes after midnight, if the user recorded a time.
   final int? minuteOfDay;
+
+  /// Only meaningful for partnered sex.
   final SexProtection? protection;
   final bool? orgasm;
   final String? note;
   const SexEntry({
     required this.id,
     required this.date,
+    required this.kind,
     this.minuteOfDay,
     this.protection,
     this.orgasm,
@@ -1006,6 +1029,11 @@ class SexEntry extends DataClass implements Insertable<SexEntry> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['date'] = Variable<DateTime>(date);
+    {
+      map['kind'] = Variable<String>(
+        $SexEntriesTable.$converterkind.toSql(kind),
+      );
+    }
     if (!nullToAbsent || minuteOfDay != null) {
       map['minute_of_day'] = Variable<int>(minuteOfDay);
     }
@@ -1027,6 +1055,7 @@ class SexEntry extends DataClass implements Insertable<SexEntry> {
     return SexEntriesCompanion(
       id: Value(id),
       date: Value(date),
+      kind: Value(kind),
       minuteOfDay: minuteOfDay == null && nullToAbsent
           ? const Value.absent()
           : Value(minuteOfDay),
@@ -1048,6 +1077,9 @@ class SexEntry extends DataClass implements Insertable<SexEntry> {
     return SexEntry(
       id: serializer.fromJson<int>(json['id']),
       date: serializer.fromJson<DateTime>(json['date']),
+      kind: $SexEntriesTable.$converterkind.fromJson(
+        serializer.fromJson<String>(json['kind']),
+      ),
       minuteOfDay: serializer.fromJson<int?>(json['minuteOfDay']),
       protection: $SexEntriesTable.$converterprotectionn.fromJson(
         serializer.fromJson<String?>(json['protection']),
@@ -1062,6 +1094,9 @@ class SexEntry extends DataClass implements Insertable<SexEntry> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'date': serializer.toJson<DateTime>(date),
+      'kind': serializer.toJson<String>(
+        $SexEntriesTable.$converterkind.toJson(kind),
+      ),
       'minuteOfDay': serializer.toJson<int?>(minuteOfDay),
       'protection': serializer.toJson<String?>(
         $SexEntriesTable.$converterprotectionn.toJson(protection),
@@ -1074,6 +1109,7 @@ class SexEntry extends DataClass implements Insertable<SexEntry> {
   SexEntry copyWith({
     int? id,
     DateTime? date,
+    SexKind? kind,
     Value<int?> minuteOfDay = const Value.absent(),
     Value<SexProtection?> protection = const Value.absent(),
     Value<bool?> orgasm = const Value.absent(),
@@ -1081,6 +1117,7 @@ class SexEntry extends DataClass implements Insertable<SexEntry> {
   }) => SexEntry(
     id: id ?? this.id,
     date: date ?? this.date,
+    kind: kind ?? this.kind,
     minuteOfDay: minuteOfDay.present ? minuteOfDay.value : this.minuteOfDay,
     protection: protection.present ? protection.value : this.protection,
     orgasm: orgasm.present ? orgasm.value : this.orgasm,
@@ -1090,6 +1127,7 @@ class SexEntry extends DataClass implements Insertable<SexEntry> {
     return SexEntry(
       id: data.id.present ? data.id.value : this.id,
       date: data.date.present ? data.date.value : this.date,
+      kind: data.kind.present ? data.kind.value : this.kind,
       minuteOfDay: data.minuteOfDay.present
           ? data.minuteOfDay.value
           : this.minuteOfDay,
@@ -1106,6 +1144,7 @@ class SexEntry extends DataClass implements Insertable<SexEntry> {
     return (StringBuffer('SexEntry(')
           ..write('id: $id, ')
           ..write('date: $date, ')
+          ..write('kind: $kind, ')
           ..write('minuteOfDay: $minuteOfDay, ')
           ..write('protection: $protection, ')
           ..write('orgasm: $orgasm, ')
@@ -1116,13 +1155,14 @@ class SexEntry extends DataClass implements Insertable<SexEntry> {
 
   @override
   int get hashCode =>
-      Object.hash(id, date, minuteOfDay, protection, orgasm, note);
+      Object.hash(id, date, kind, minuteOfDay, protection, orgasm, note);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is SexEntry &&
           other.id == this.id &&
           other.date == this.date &&
+          other.kind == this.kind &&
           other.minuteOfDay == this.minuteOfDay &&
           other.protection == this.protection &&
           other.orgasm == this.orgasm &&
@@ -1132,6 +1172,7 @@ class SexEntry extends DataClass implements Insertable<SexEntry> {
 class SexEntriesCompanion extends UpdateCompanion<SexEntry> {
   final Value<int> id;
   final Value<DateTime> date;
+  final Value<SexKind> kind;
   final Value<int?> minuteOfDay;
   final Value<SexProtection?> protection;
   final Value<bool?> orgasm;
@@ -1139,6 +1180,7 @@ class SexEntriesCompanion extends UpdateCompanion<SexEntry> {
   const SexEntriesCompanion({
     this.id = const Value.absent(),
     this.date = const Value.absent(),
+    this.kind = const Value.absent(),
     this.minuteOfDay = const Value.absent(),
     this.protection = const Value.absent(),
     this.orgasm = const Value.absent(),
@@ -1147,6 +1189,7 @@ class SexEntriesCompanion extends UpdateCompanion<SexEntry> {
   SexEntriesCompanion.insert({
     this.id = const Value.absent(),
     required DateTime date,
+    this.kind = const Value.absent(),
     this.minuteOfDay = const Value.absent(),
     this.protection = const Value.absent(),
     this.orgasm = const Value.absent(),
@@ -1155,6 +1198,7 @@ class SexEntriesCompanion extends UpdateCompanion<SexEntry> {
   static Insertable<SexEntry> custom({
     Expression<int>? id,
     Expression<DateTime>? date,
+    Expression<String>? kind,
     Expression<int>? minuteOfDay,
     Expression<String>? protection,
     Expression<bool>? orgasm,
@@ -1163,6 +1207,7 @@ class SexEntriesCompanion extends UpdateCompanion<SexEntry> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (date != null) 'date': date,
+      if (kind != null) 'kind': kind,
       if (minuteOfDay != null) 'minute_of_day': minuteOfDay,
       if (protection != null) 'protection': protection,
       if (orgasm != null) 'orgasm': orgasm,
@@ -1173,6 +1218,7 @@ class SexEntriesCompanion extends UpdateCompanion<SexEntry> {
   SexEntriesCompanion copyWith({
     Value<int>? id,
     Value<DateTime>? date,
+    Value<SexKind>? kind,
     Value<int?>? minuteOfDay,
     Value<SexProtection?>? protection,
     Value<bool?>? orgasm,
@@ -1181,6 +1227,7 @@ class SexEntriesCompanion extends UpdateCompanion<SexEntry> {
     return SexEntriesCompanion(
       id: id ?? this.id,
       date: date ?? this.date,
+      kind: kind ?? this.kind,
       minuteOfDay: minuteOfDay ?? this.minuteOfDay,
       protection: protection ?? this.protection,
       orgasm: orgasm ?? this.orgasm,
@@ -1196,6 +1243,11 @@ class SexEntriesCompanion extends UpdateCompanion<SexEntry> {
     }
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(
+        $SexEntriesTable.$converterkind.toSql(kind.value),
+      );
     }
     if (minuteOfDay.present) {
       map['minute_of_day'] = Variable<int>(minuteOfDay.value);
@@ -1219,6 +1271,7 @@ class SexEntriesCompanion extends UpdateCompanion<SexEntry> {
     return (StringBuffer('SexEntriesCompanion(')
           ..write('id: $id, ')
           ..write('date: $date, ')
+          ..write('kind: $kind, ')
           ..write('minuteOfDay: $minuteOfDay, ')
           ..write('protection: $protection, ')
           ..write('orgasm: $orgasm, ')
@@ -1898,6 +1951,7 @@ typedef $$SymptomEntriesTableProcessedTableManager =
 typedef $$SexEntriesTableCreateCompanionBuilder = SexEntriesCompanion Function({
   Value<int> id,
   required DateTime date,
+  Value<SexKind> kind,
   Value<int?> minuteOfDay,
   Value<SexProtection?> protection,
   Value<bool?> orgasm,
@@ -1906,6 +1960,7 @@ typedef $$SexEntriesTableCreateCompanionBuilder = SexEntriesCompanion Function({
 typedef $$SexEntriesTableUpdateCompanionBuilder = SexEntriesCompanion Function({
   Value<int> id,
   Value<DateTime> date,
+  Value<SexKind> kind,
   Value<int?> minuteOfDay,
   Value<SexProtection?> protection,
   Value<bool?> orgasm,
@@ -1930,6 +1985,12 @@ class $$SexEntriesTableFilterComposer
     column: $table.date,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnWithTypeConverterFilters<SexKind, SexKind, String> get kind =>
+      $composableBuilder(
+        column: $table.kind,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<int> get minuteOfDay => $composableBuilder(
     column: $table.minuteOfDay,
@@ -1972,6 +2033,11 @@ class $$SexEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get minuteOfDay => $composableBuilder(
     column: $table.minuteOfDay,
     builder: (column) => ColumnOrderings(column),
@@ -2007,6 +2073,9 @@ class $$SexEntriesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SexKind, String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
 
   GeneratedColumn<int> get minuteOfDay => $composableBuilder(
     column: $table.minuteOfDay,
@@ -2056,6 +2125,7 @@ class $$SexEntriesTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
+                Value<SexKind> kind = const Value.absent(),
                 Value<int?> minuteOfDay = const Value.absent(),
                 Value<SexProtection?> protection = const Value.absent(),
                 Value<bool?> orgasm = const Value.absent(),
@@ -2063,6 +2133,7 @@ class $$SexEntriesTableTableManager
               }) => SexEntriesCompanion(
                 id: id,
                 date: date,
+                kind: kind,
                 minuteOfDay: minuteOfDay,
                 protection: protection,
                 orgasm: orgasm,
@@ -2072,6 +2143,7 @@ class $$SexEntriesTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required DateTime date,
+                Value<SexKind> kind = const Value.absent(),
                 Value<int?> minuteOfDay = const Value.absent(),
                 Value<SexProtection?> protection = const Value.absent(),
                 Value<bool?> orgasm = const Value.absent(),
@@ -2079,6 +2151,7 @@ class $$SexEntriesTableTableManager
               }) => SexEntriesCompanion.insert(
                 id: id,
                 date: date,
+                kind: kind,
                 minuteOfDay: minuteOfDay,
                 protection: protection,
                 orgasm: orgasm,

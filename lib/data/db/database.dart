@@ -12,7 +12,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -27,6 +27,10 @@ class AppDatabase extends _$AppDatabase {
               FROM day_logs WHERE sex IN ('protected', 'unprotected')
             ''');
         await m.alterTable(TableMigration(schema.dayLogs));
+      },
+      from2To3: (m, schema) async {
+        // Existing entries default to partnered.
+        await m.addColumn(schema.sexEntries, schema.sexEntries.kind);
       },
     ),
   );

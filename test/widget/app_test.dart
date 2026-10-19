@@ -1,6 +1,7 @@
 import 'package:comma/app/app.dart';
 import 'package:comma/app/providers.dart';
 import 'package:comma/data/db/database.dart';
+import 'package:comma/domain/models/day_log.dart';
 import 'package:drift/drift.dart' show DatabaseConnection;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -48,27 +49,51 @@ void main() {
     await tester.drag(find.byType(ListView).first, const Offset(0, 2000));
     await tester.pumpAndSettle();
 
-    // Log sex twice on the same day; unprotected shows a help prompt.
-    final logSex = find.widgetWithText(FilledButton, 'Log sex');
-    await tester.scrollUntilVisible(logSex, 200);
-    await tester.tap(logSex);
+    // During a period only "Log today" is shown, and there's no separate
+    // sex button: sexual activity is logged inside the day sheet.
+    expect(find.text('Log flow'), findsNothing);
+    expect(find.text('Period started'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Log sex'), findsNothing);
+
+    await tester.tap(find.text('Log today'));
+    await tester.pumpAndSettle();
+    final add = find.widgetWithText(OutlinedButton, 'Add');
+    await tester.scrollUntilVisible(
+      add,
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(add);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Unprotected'));
+    await tester.ensureVisible(find.text('Save'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
     expect(find.text('Learn more'), findsOneWidget);
-    expect(find.textContaining('unprotected sex recently'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Log sex (1 today)'));
+    // A second entry the same day: masturbation hides protection.
+    final addAnother = find.widgetWithText(OutlinedButton, 'Add another');
+    await tester.ensureVisible(addAnother);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Condom'));
+    await tester.tap(addAnother);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Masturbation'));
+    await tester.pumpAndSettle();
+    expect(find.text('Protection'), findsNothing);
+    await tester.ensureVisible(find.text('Save'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
-    expect(find.text('Log sex (2 today)'), findsOneWidget);
-    expect(await db.select(db.sexEntries).get(), hasLength(2));
-    ScaffoldMessenger.of(tester.element(find.byType(NavigationBar)))
-        .clearSnackBars();
+
+    final entries = await db.select(db.sexEntries).get();
+    expect(entries.map((e) => (e.kind, e.protection)), [
+      (SexKind.partnered, SexProtection.unprotected),
+      (SexKind.solo, null),
+    ]);
+    await tester.tapAt(const Offset(10, 10)); // dismiss the day sheet
     await tester.pumpAndSettle();
+    expect(find.textContaining('unprotected sex recently'), findsOneWidget);
 
     // Learn tab, an article, and the help page.
     await tester.tap(find.text('Learn'));

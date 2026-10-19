@@ -55,6 +55,7 @@ class SexEntrySheet extends ConsumerStatefulWidget {
 class _SexEntrySheetState extends ConsumerState<SexEntrySheet> {
   late var _day = widget.day;
   late int? _minute = widget.existing?.minuteOfDay;
+  late var _kind = widget.existing?.kind ?? SexKind.partnered;
   late SexProtection? _protection = widget.existing?.protection;
   late bool? _orgasm = widget.existing?.orgasm;
   late final _note = TextEditingController(text: widget.existing?.note);
@@ -75,37 +76,14 @@ class _SexEntrySheetState extends ConsumerState<SexEntrySheet> {
                 ? const Value.absent()
                 : Value(widget.existing!.id),
             date: Value(_day),
+            kind: Value(_kind),
             minuteOfDay: Value(_minute),
-            protection: Value(_protection),
+            protection: Value(_kind == SexKind.partnered ? _protection : null),
             orgasm: Value(_orgasm),
             note: Value(note.isEmpty ? null : note),
           ),
         );
-    if (!mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
-    navigator.pop();
-    if (_protection == SexProtection.unprotected && widget.existing == null) {
-      messenger.showSnackBar(
-        SnackBar(
-          duration: const Duration(seconds: 8),
-          content: const Text(
-            'If you don\'t want to get pregnant, emergency contraception '
-            'works best as soon as possible.',
-          ),
-          action: SnackBarAction(
-            label: 'Learn more',
-            onPressed: () => navigator.push(
-              MaterialPageRoute<void>(
-                builder: (_) => ArticleScreen(
-                  article: articleById(ArticleIds.emergencyContraception)!,
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
+    if (mounted) Navigator.pop(context);
   }
 
   Future<void> _delete() async {
@@ -133,8 +111,25 @@ class _SexEntrySheetState extends ConsumerState<SexEntrySheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.existing == null ? 'Log sex' : 'Edit entry',
+              widget.existing == null ? 'Log sexual activity' : 'Edit entry',
               style: text.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            SegmentedButton<SexKind>(
+              segments: const [
+                ButtonSegment(
+                  value: SexKind.partnered,
+                  label: Text('With a partner'),
+                  icon: Icon(Icons.favorite_outline),
+                ),
+                ButtonSegment(
+                  value: SexKind.solo,
+                  label: Text('Masturbation'),
+                  icon: Icon(Icons.self_improvement),
+                ),
+              ],
+              selected: {_kind},
+              onSelectionChanged: (v) => setState(() => _kind = v.single),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -185,19 +180,21 @@ class _SexEntrySheetState extends ConsumerState<SexEntrySheet> {
                   ),
               ],
             ),
-            label('Protection'),
-            Wrap(
-              spacing: 8,
-              children: [
-                for (final p in SexProtection.values)
-                  ChoiceChip(
-                    label: Text(protectionLabel(p)),
-                    selected: _protection == p,
-                    onSelected: (on) =>
-                        setState(() => _protection = on ? p : null),
-                  ),
-              ],
-            ),
+            if (_kind == SexKind.partnered) ...[
+              label('Protection'),
+              Wrap(
+                spacing: 8,
+                children: [
+                  for (final p in SexProtection.values)
+                    ChoiceChip(
+                      label: Text(protectionLabel(p)),
+                      selected: _protection == p,
+                      onSelected: (on) =>
+                          setState(() => _protection = on ? p : null),
+                    ),
+                ],
+              ),
+            ],
             label('Orgasm'),
             Wrap(
               spacing: 8,
@@ -256,22 +253,45 @@ class SexEntriesList extends ConsumerWidget {
         for (final e in entries)
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.favorite_outline),
+            leading: Icon(
+              e.kind == SexKind.solo
+                  ? Icons.self_improvement
+                  : Icons.favorite_outline,
+            ),
             title: Text(
               [
+                if (e.kind == SexKind.solo) 'Masturbation',
                 if (e.minuteOfDay != null)
                   formatMinuteOfDay(context, e.minuteOfDay!),
                 if (e.protection != null) protectionLabel(e.protection!),
                 if (e.orgasm == true) 'Orgasm',
-              ].join(' · ').ifEmpty('Logged'),
+              ].join(' · ').ifEmpty('Sex'),
             ),
             subtitle: e.note == null ? null : Text(e.note!),
             trailing: const Icon(Icons.edit_outlined),
             onTap: () => showSexEntrySheet(context, existing: e),
           ),
+        if (entries.any(
+          (e) =>
+              e.kind == SexKind.partnered &&
+              e.protection == SexProtection.unprotected,
+        ))
+          Card(
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            child: ListTile(
+              leading: const Icon(Icons.health_and_safety_outlined),
+              title: const Text(
+                'If you don\'t want to get pregnant, emergency contraception '
+                'works best as soon as possible.',
+              ),
+              trailing: const Text('Learn more'),
+              onTap: () =>
+                  openArticle(context, ArticleIds.emergencyContraception),
+            ),
+          ),
         OutlinedButton.icon(
           icon: const Icon(Icons.add),
-          label: Text(entries.isEmpty ? 'Log sex' : 'Add another'),
+          label: Text(entries.isEmpty ? 'Add' : 'Add another'),
           onPressed: () => showSexEntrySheet(context, day: day),
         ),
       ],

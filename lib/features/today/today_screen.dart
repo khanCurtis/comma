@@ -30,7 +30,6 @@ class TodayScreen extends ConsumerWidget {
     final recentSex =
         ref.watch(sexEntriesProvider((addDays(today, -4), today))).value ??
         const [];
-    final sexToday = recentSex.where((e) => e.date == today).length;
     final recentUnprotected = recentSex.any(
       (e) => e.protection == SexProtection.unprotected,
     );
@@ -87,40 +86,38 @@ class TodayScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 32),
-        Row(
-          children: [
-            Expanded(
-              child: FilledButton.icon(
-                icon: const Icon(Icons.water_drop),
-                label: Text(
-                  status?.phase == Phase.period ? 'Log flow' : 'Period started',
-                ),
-                onPressed: () async {
-                  if (status?.phase != Phase.period) {
+        // During a period, "Log today" covers flow, so it's the only button.
+        if (status?.phase == Phase.period)
+          FilledButton.icon(
+            icon: const Icon(Icons.edit_note),
+            label: const Text('Log today'),
+            onPressed: () => showDayLogSheet(context, today),
+          )
+        else
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.water_drop),
+                  label: const Text('Period started'),
+                  onPressed: () async {
                     await ref
                         .read(databaseProvider)
                         .setFlow(today, FlowLevel.medium);
-                  }
-                  if (context.mounted) showDayLogSheet(context, today);
-                },
+                    if (context.mounted) showDayLogSheet(context, today);
+                  },
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton.icon(
-                icon: const Icon(Icons.edit_note),
-                label: const Text('Log today'),
-                onPressed: () => showDayLogSheet(context, today),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.edit_note),
+                  label: const Text('Log today'),
+                  onPressed: () => showDayLogSheet(context, today),
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        FilledButton.tonalIcon(
-          icon: const Icon(Icons.favorite_outline),
-          label: Text(sexToday == 0 ? 'Log sex' : 'Log sex ($sexToday today)'),
-          onPressed: () => showSexEntrySheet(context, day: today),
-        ),
+            ],
+          ),
         if (recentUnprotected) ...[
           const SizedBox(height: 16),
           _TipCard(

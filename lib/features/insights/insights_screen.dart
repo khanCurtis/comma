@@ -23,8 +23,9 @@ class InsightsScreen extends ConsumerWidget {
         ref.watch(sexEntriesProvider((addDays(today, -89), today))).value ??
         const [];
     final cycleStart = cycles.isEmpty ? null : cycles.last.start;
-    int countSince(DateTime from) =>
-        sex.where((e) => !e.date.isBefore(from)).length;
+    int countSince(DateTime from, SexKind kind) =>
+        sex.where((e) => e.kind == kind && !e.date.isBefore(from)).length;
+    final monthAgo = addDays(today, -29);
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -43,16 +44,26 @@ class InsightsScreen extends ConsumerWidget {
           ),
         if (sex.isNotEmpty) ...[
           const SizedBox(height: 24),
-          Text('Sex', style: text.titleMedium),
+          Text('Sexual activity', style: text.titleMedium),
           const SizedBox(height: 8),
+          for (final (kind, label) in [
+            (SexKind.partnered, 'Sex'),
+            (SexKind.solo, 'Masturbation'),
+          ])
+            Row(
+              children: [
+                _Stat(
+                  '$label, this cycle',
+                  cycleStart == null ? '–' : '${countSince(cycleStart, kind)}',
+                ),
+                _Stat('$label, 30 days', '${countSince(monthAgo, kind)}'),
+              ],
+            ),
           Row(
             children: [
-              if (cycleStart != null)
-                _Stat('This cycle', '${countSince(cycleStart)}'),
-              _Stat('Last 30 days', '${countSince(addDays(today, -29))}'),
               _Stat(
-                'Unprotected (30 d)',
-                '${sex.where((e) => !e.date.isBefore(addDays(today, -29)) && e.protection == SexProtection.unprotected).length}',
+                'Unprotected sex, 30 days',
+                '${sex.where((e) => !e.date.isBefore(monthAgo) && e.protection == SexProtection.unprotected).length}',
               ),
             ],
           ),

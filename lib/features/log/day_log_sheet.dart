@@ -107,7 +107,7 @@ class DayLogSheet extends ConsumerWidget {
               ],
             ),
           ),
-          section('Sex', SexEntriesList(day: day)),
+          section('Sexual activity', SexEntriesList(day: day)),
           section(
             'Notes',
             _NoteField(

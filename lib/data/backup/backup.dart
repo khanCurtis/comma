@@ -24,7 +24,7 @@ import '../db/database.dart';
 /// The format is documented so data can always be recovered without the app.
 const _plainFormat = 'comma-backup';
 const _encryptedFormat = 'comma-backup-encrypted';
-const _version = 2;
+const _version = 3;
 const _maxIterations = 10000000;
 
 class BackupException implements Exception {
@@ -192,6 +192,7 @@ Future<Map<String, Object?>> exportBackup(AppDatabase db) async {
       for (final e in sex)
         {
           'date': _day(e.date),
+          'kind': e.kind.name,
           if (e.minuteOfDay != null) 'minuteOfDay': e.minuteOfDay,
           if (e.protection != null) 'protection': e.protection!.name,
           if (e.orgasm != null) 'orgasm': e.orgasm,
@@ -239,6 +240,10 @@ Future<int> importBackup(AppDatabase db, Map<String, Object?> backup) async {
             for (final raw in backup['sexEntries'] as List)
               SexEntriesCompanion.insert(
                 date: _parseDay((raw as Map)['date']),
+                // Version 2 had no kind; everything was partnered.
+                kind: Value(
+                  _enum(SexKind.values, raw['kind']) ?? SexKind.partnered,
+                ),
                 minuteOfDay: Value(raw['minuteOfDay'] as int?),
                 protection: Value(
                   _enum(SexProtection.values, raw['protection']),

@@ -13,6 +13,8 @@ enum Mucus { dry, sticky, creamy, watery, eggWhite }
 
 enum TestResult { negative, positive, peak }
 
+enum SexKind { partnered, solo }
+
 /// Protection used during one sexual encounter.
 enum SexProtection {
   unprotected,
