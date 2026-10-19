@@ -4,9 +4,11 @@ import 'package:intl/intl.dart';
 
 import '../../app/providers.dart';
 import '../../domain/units.dart';
+import '../lock/lock_settings_screen.dart';
 import '../medications/medications_screen.dart';
 import '../reminders/reminders_screen.dart';
 import '../reports/reports_screen.dart';
+import 'app_icon.dart';
 import 'backup_flow.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -115,6 +117,27 @@ class SettingsScreen extends ConsumerWidget {
           ).push(MaterialPageRoute<void>(builder: (_) => const _TagsScreen())),
         ),
         const Divider(),
+        ListTile(
+          leading: const Icon(Icons.lock_outline),
+          title: const Text('App lock'),
+          subtitle: const Text('PIN, fingerprint and emergency PIN'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => openLockSettings(context),
+        ),
+        if (ref.watch(appIconServiceProvider).supported)
+          SwitchListTile(
+            secondary: const Icon(Icons.visibility_off_outlined),
+            title: const Text('Discreet app icon'),
+            subtitle: const Text(
+              'Shows as "Daily" with a plain icon on your home screen. Your '
+              'launcher may take a moment to update.',
+            ),
+            value: ref.watch(discreetIconProvider).value ?? false,
+            onChanged: (on) async {
+              await ref.read(appIconServiceProvider).setDiscreet(on);
+              ref.invalidate(discreetIconProvider);
+            },
+          ),
         ListTile(
           leading: const Icon(Icons.save_alt),
           title: const Text('Back up data'),

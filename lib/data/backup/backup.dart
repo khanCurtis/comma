@@ -325,7 +325,7 @@ Future<int> importBackup(AppDatabase db, Map<String, Object?> backup) async {
   }
 
   await db.transaction(() async {
-    await db.wipe();
+    await db.deleteAll();
     await db.batch((b) {
       b.insertAll(db.dayLogs, logs);
       b.insertAll(db.symptomEntries, symptoms);

@@ -232,10 +232,17 @@ class AppDatabase extends _$AppDatabase {
   Future<void> setSetting(String key, String value) => into(settings)
       .insertOnConflictUpdate(SettingsCompanion.insert(key: key, value: value));
 
-  /// Permanently deletes every log and setting.
-  Future<void> wipe() => transaction(() async {
+  /// Permanently deletes every log and setting, then rebuilds the file so
+  /// deleted rows don't linger in free pages.
+  Future<void> wipe() async {
+    await transaction(deleteAll);
+    await customStatement('VACUUM');
+  }
+
+  /// Deletes every row. Safe to call inside a transaction.
+  Future<void> deleteAll() async {
     for (final table in allTables) {
       await delete(table).go();
     }
-  });
+  }
 }

@@ -59,10 +59,10 @@ Cycle data is some of the most sensitive health data a person can have. Many pop
 
 ### Privacy and security
 - Encrypted on-device database (SQLite3 Multiple Ciphers)
-- Optional app lock with PIN or biometrics
-- Discreet app icon and neutral notification text
+- Optional app lock with a PIN, plus fingerprint or face unlock. The app relocks after 30 seconds away, and a privacy cover hides it in the app switcher.
+- Emergency PIN: entering it on the lock screen instantly and permanently erases all data, then opens Comma as if it were new
+- Discreet app icon and name ("Daily") on Android, and neutral notification text by default
 - Encrypted backup file that you control: save it anywhere, restore it anywhere
-- Panic wipe option
 
 ## Installation
 

@@ -52,35 +52,45 @@ class TodayScreen extends ConsumerWidget {
             ),
             alignment: Alignment.center,
             padding: const EdgeInsets.all(24),
-            child: DefaultTextStyle.merge(
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: status?.phase == Phase.period ? colors.onPeriod : null,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: status == null
-                    ? [const Text('Log your period to see predictions')]
-                    : [
-                        Text(
-                          _phaseLabel(status.phase),
-                          style: text.titleMedium?.copyWith(
-                            color: status.phase == Phase.period
-                                ? colors.onPeriod
-                                : null,
+            // Scale down rather than overflow with long cycles or large text.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: DefaultTextStyle.merge(
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: status?.phase == Phase.period ? colors.onPeriod : null,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: status == null
+                      ? [
+                          // Fixed width so it wraps inside the circle.
+                          const SizedBox(
+                            width: 160,
+                            child: Text('Log your period to see predictions'),
                           ),
-                        ),
-                        Text(
-                          'Day ${status.cycleDay}',
-                          style: text.displaySmall?.copyWith(
-                            color: status.phase == Phase.period
-                                ? colors.onPeriod
-                                : null,
+                        ]
+                      : [
+                          Text(
+                            _phaseLabel(status.phase),
+                            style: text.titleMedium?.copyWith(
+                              color: status.phase == Phase.period
+                                  ? colors.onPeriod
+                                  : null,
+                            ),
                           ),
-                        ),
-                        if (status.daysUntilPeriod case final d?)
-                          Text(_countdown(d)),
-                      ],
+                          Text(
+                            'Day ${status.cycleDay}',
+                            style: text.displaySmall?.copyWith(
+                              color: status.phase == Phase.period
+                                  ? colors.onPeriod
+                                  : null,
+                            ),
+                          ),
+                          if (status.daysUntilPeriod case final d?)
+                            Text(_countdown(d)),
+                        ],
+                ),
               ),
             ),
           ),

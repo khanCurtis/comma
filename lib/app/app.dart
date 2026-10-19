@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/calendar/calendar_screen.dart';
 import '../features/insights/insights_screen.dart';
 import '../features/learn/learn_screen.dart';
+import '../features/lock/lock_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/today/today_screen.dart';
@@ -19,6 +20,7 @@ class CommaApp extends StatelessWidget {
       title: 'Comma',
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
+      builder: (context, child) => LockGate(child: child!),
       home: const _Root(),
     );
   }
