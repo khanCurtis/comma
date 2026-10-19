@@ -11,8 +11,12 @@ void main() {
   testWidgets('onboarding leads to the Today screen and logging works', (
     tester,
   ) async {
-    final db = AppDatabase(DatabaseConnection(NativeDatabase.memory(),
-        closeStreamsSynchronously: true));
+    final db = AppDatabase(
+      DatabaseConnection(
+        NativeDatabase.memory(),
+        closeStreamsSynchronously: true,
+      ),
+    );
 
     await tester.pumpWidget(
       ProviderScope(
@@ -46,6 +50,24 @@ void main() {
       await tester.pumpAndSettle();
     }
     expect(find.text('Delete all data'), findsOneWidget);
+    expect(find.text('Never backed up'), findsOneWidget);
+
+    // Backup dialog validates the password before doing anything.
+    await tester.tap(find.text('Back up data'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Backup password'),
+      'abcdef',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Confirm password'),
+      'abcdeg',
+    );
+    await tester.tap(find.text('Save backup'));
+    await tester.pumpAndSettle();
+    expect(find.text("Passwords don't match"), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
 
     // Unmount so drift's stream subscriptions are cancelled before closing.
     await tester.pumpWidget(const SizedBox());

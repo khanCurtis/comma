@@ -19,6 +19,7 @@ abstract final class SettingKeys {
   static const onboarded = 'onboarded';
   static const cycleLength = 'default_cycle_length';
   static const periodLength = 'default_period_length';
+  static const lastBackup = 'last_backup';
 }
 
 final settingProvider = StreamProvider.family<String?, String>(

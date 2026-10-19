@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../app/providers.dart';
 import '../../domain/dates.dart';
 import '../../domain/models/day_log.dart';
+import '../settings/backup_flow.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -103,6 +104,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             FilledButton(
               onPressed: _acknowledged ? _finish : null,
               child: const Text('Get started'),
+            ),
+            const SizedBox(height: 8),
+            TextButton.icon(
+              icon: const Icon(Icons.restore),
+              label: const Text('Restore from a backup'),
+              onPressed: () => importBackupFlow(context, ref),
             ),
           ],
         ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../app/providers.dart';
+import 'backup_flow.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -39,6 +41,9 @@ class SettingsScreen extends ConsumerWidget {
         ref.watch(settingProvider(SettingKeys.cycleLength)).value ?? '28';
     final periodLength =
         ref.watch(settingProvider(SettingKeys.periodLength)).value ?? '5';
+    final lastBackup = DateTime.tryParse(
+      ref.watch(settingProvider(SettingKeys.lastBackup)).value ?? '',
+    );
 
     return ListView(
       children: [
@@ -57,6 +62,23 @@ class SettingsScreen extends ConsumerWidget {
         ListTile(
           title: const Text('Default period length'),
           trailing: Text('$periodLength days'),
+        ),
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.save_alt),
+          title: const Text('Back up data'),
+          subtitle: Text(
+            lastBackup == null
+                ? 'Never backed up'
+                : 'Last backup ${DateFormat.yMMMd().format(lastBackup)}',
+          ),
+          onTap: () => exportBackupFlow(context, ref),
+        ),
+        ListTile(
+          leading: const Icon(Icons.restore),
+          title: const Text('Restore from backup'),
+          subtitle: const Text('Replaces all data on this device'),
+          onTap: () => importBackupFlow(context, ref),
         ),
         const Divider(),
         ListTile(

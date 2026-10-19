@@ -132,7 +132,8 @@ Every rule has unit tests built on synthetic fixture data, never real user data.
 - [ ] BBT, mucus, LH and pregnancy tests
 - [ ] BBT chart + ovulation confirmation
 - [ ] PDF doctor report
-- [ ] CSV / JSON export, encrypted backup and restore
+- [x] Encrypted backup and restore (JSON, optionally password-encrypted)
+- [ ] CSV export
 - [ ] App lock (PIN + biometrics)
 
 ### Phase 3: Insights and modes

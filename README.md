@@ -67,6 +67,18 @@ Cycle data is some of the most sensitive health data a person can have. Many pop
 ### iOS / iPadOS
 Comma is not on the App Store. Each release includes an unsigned `.ipa` that you can sideload with [AltStore](https://altstore.io) or [SideStore](https://sidestore.io), using a free Apple ID. With a free Apple ID, sideloaded apps must be refreshed every 7 days. AltStore and SideStore can do this automatically.
 
+## Backing up your data
+
+Your data lives only on your phone. **Uninstalling the app permanently deletes it.** The encryption key is stored in your phone's secure storage and is removed along with the app.
+
+To keep your data safe:
+1. Go to **Settings → Back up data**, choose a password, and save the `.comma` file somewhere other than your phone (a computer, USB drive or your own cloud storage).
+2. To restore, choose **Restore from a backup** on the welcome screen, or **Settings → Restore from backup**.
+
+Backups are encrypted with AES-256-GCM using a key derived from your password. If you forget the password, nobody can open the backup, including you. The file format is documented in [`docs/BACKUP_FORMAT.md`](docs/BACKUP_FORMAT.md), so your data is never locked into the app.
+
+Back up before switching phones, and before installing Comma from a different source (for example, moving from GitHub Releases to F-Droid). Android refuses to install an update signed by a different key, so you'd need to uninstall first.
+
 ## Building from source
 
 Comma is built with [Flutter](https://flutter.dev).
