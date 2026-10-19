@@ -72,3 +72,35 @@ class Settings extends Table {
   @override
   Set<Column> get primaryKey => {key};
 }
+
+class Medications extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  TextColumn get dose => text().nullable()();
+  BoolColumn get isContraceptive =>
+      boolean().withDefault(const Constant(false))();
+
+  /// Daily reminder time in minutes after midnight, or null for none.
+  IntColumn get reminderMinute => integer().nullable()();
+
+  /// First day of taking it. With a pill pack, day 1 of the first pack.
+  DateTimeColumn get startDate => dateTime()();
+
+  /// Last day of taking it, or null while ongoing.
+  DateTimeColumn get endDate => dateTime().nullable()();
+
+  /// Pill-pack pattern: [activeDays] on, then [breakDays] off, repeating.
+  /// A [breakDays] of 0 means taken every day.
+  IntColumn get activeDays => integer().withDefault(const Constant(0))();
+  IntColumn get breakDays => integer().withDefault(const Constant(0))();
+}
+
+/// One row per medication per day it was marked as taken.
+class MedicationLogs extends Table {
+  DateTimeColumn get date => dateTime()();
+  IntColumn get medicationId =>
+      integer().references(Medications, #id, onDelete: KeyAction.cascade)();
+
+  @override
+  Set<Column> get primaryKey => {date, medicationId};
+}

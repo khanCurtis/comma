@@ -84,6 +84,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       allFlags: ref.read(irregularitiesProvider),
       patterns: ref.read(symptomPatternsProvider),
       predictions: ref.read(predictionsProvider),
+      medications: await db.select(db.medications).get(),
     );
     final country = PlatformDispatcher.instance.locale.countryCode;
     return buildPdfReport(

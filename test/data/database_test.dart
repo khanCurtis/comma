@@ -135,6 +135,19 @@ void main() {
       },
     );
 
+    test('deleting a medication removes its taken log', () async {
+      final id = await db.saveMedication(
+        MedicationsCompanion.insert(name: 'Iron', startDate: d(2026, 1, 1)),
+      );
+      await db.setMedicationTaken(d(2026, 1, 1), id, true);
+      expect(await db.watchMedicationsTaken(d(2026, 1, 1)).first, {id});
+      await db.setMedicationTaken(d(2026, 1, 1), id, false);
+      expect(await db.watchMedicationsTaken(d(2026, 1, 1)).first, isEmpty);
+      await db.setMedicationTaken(d(2026, 1, 2), id, true);
+      await db.deleteMedication(id);
+      expect(await db.select(db.medicationLogs).get(), isEmpty);
+    });
+
     test('wipe removes everything', () async {
       await db.setFlow(d(2026, 1, 1), FlowLevel.heavy);
       await db.setSetting('a', 'b');

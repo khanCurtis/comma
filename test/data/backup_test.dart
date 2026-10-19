@@ -40,6 +40,17 @@ Future<AppDatabase> seeded() async {
       kind: const Value(SexKind.solo),
     ),
   );
+  final pill = await db.saveMedication(
+    MedicationsCompanion.insert(
+      name: 'Pill',
+      startDate: d(2026, 1, 1),
+      isContraceptive: const Value(true),
+      activeDays: const Value(21),
+      breakDays: const Value(7),
+      reminderMinute: const Value(21 * 60),
+    ),
+  );
+  await db.setMedicationTaken(d(2026, 1, 2), pill, true);
   await db.setSetting('onboarded', 'true');
   return db;
 }

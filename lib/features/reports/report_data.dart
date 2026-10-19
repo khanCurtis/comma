@@ -79,6 +79,7 @@ class ReportData {
     required this.pregnancyTests,
     required this.notes,
     required this.sex,
+    this.medications = const [],
   });
 
   final ReportOptions options;
@@ -92,6 +93,9 @@ class ReportData {
   final List<(DateTime, TestResult)> pregnancyTests;
   final List<(DateTime, String)> notes;
   final SexSummary? sex;
+
+  /// Medications taken at any point during the report's range.
+  final List<Medication> medications;
 }
 
 ReportData buildReportData({
@@ -106,6 +110,7 @@ ReportData buildReportData({
   required List<Irregularity> allFlags,
   required List<SymptomPattern> patterns,
   required List<CyclePrediction> predictions,
+  List<Medication> medications = const [],
 }) {
   final from = dateOnly(options.from);
   final to = dateOnly(options.to);
@@ -177,6 +182,12 @@ ReportData buildReportData({
               if (l.note != null && inRange(l.date)) (l.date, l.note!),
           ]
         : const [],
+    medications: [
+      for (final m in medications)
+        if (!m.startDate.isAfter(to) &&
+            (m.endDate == null || !m.endDate!.isBefore(from)))
+          m,
+    ],
     sex: options.includeSex
         ? SexSummary(
             partnered: sexInRange

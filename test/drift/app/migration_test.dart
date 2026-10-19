@@ -11,6 +11,7 @@ import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
 import 'generated/schema_v4.dart' as v4;
+import 'generated/schema_v5.dart' as v5;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -188,6 +189,28 @@ void main() {
           ),
         ]);
         expect(await newDb.select(newDb.customTags).get(), isEmpty);
+      },
+    );
+  });
+
+  test('v4 to v5 adds empty medication tables', () async {
+    const jan1 = '2026-01-01T00:00:00.000Z';
+    await verifier.testWithDataIntegrity(
+      oldVersion: 4,
+      newVersion: 5,
+      createOld: v4.DatabaseAtV4.new,
+      createNew: v5.DatabaseAtV5.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) {
+        batch.insertAll(oldDb.dayLogs, [
+          const v4.DayLogsData(date: jan1, flow: 'light', bbtDisturbed: 0),
+        ]);
+      },
+      validateItems: (newDb) async {
+        expect(await newDb.select(newDb.dayLogs).get(), [
+          const v5.DayLogsData(date: jan1, flow: 'light', bbtDisturbed: 0),
+        ]);
+        expect(await newDb.select(newDb.medications).get(), isEmpty);
       },
     );
   });

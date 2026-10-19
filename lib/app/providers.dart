@@ -11,7 +11,10 @@ import '../domain/engine/ovulation.dart';
 import '../domain/engine/patterns.dart';
 import '../domain/engine/predictor.dart';
 import '../domain/models/cycle.dart';
+import '../domain/medication_schedule.dart';
+import '../domain/reminders.dart';
 import '../domain/units.dart';
+import '../features/reminders/notification_service.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase(openAppDatabase());
@@ -27,6 +30,10 @@ abstract final class SettingKeys {
   static const lastBackup = 'last_backup';
   static const tempUnit = 'temp_unit';
   static const weightUnit = 'weight_unit';
+  static const periodReminderDays = 'reminder_period_days';
+  static const periodReminderMinute = 'reminder_period_minute';
+  static const dailyLogReminderMinute = 'reminder_daily_minute';
+  static const discreetNotifications = 'reminders_discreet';
 }
 
 final settingProvider = StreamProvider.family<String?, String>(
@@ -137,3 +144,50 @@ final weightUnitProvider = Provider<WeightUnit>((ref) {
 final customTagsProvider = StreamProvider(
   (ref) => ref.watch(databaseProvider).watchCustomTags(),
 );
+
+final medicationsProvider = StreamProvider(
+  (ref) => ref.watch(databaseProvider).watchMedications(),
+);
+
+final reminderSettingsProvider = Provider<ReminderSettings>((ref) {
+  int? number(String key) =>
+      int.tryParse(ref.watch(settingProvider(key)).value ?? '');
+  return ReminderSettings(
+    periodDaysBefore: number(SettingKeys.periodReminderDays),
+    periodMinute: number(SettingKeys.periodReminderMinute) ?? 9 * 60,
+    dailyLogMinute: number(SettingKeys.dailyLogReminderMinute),
+    discreet:
+        ref.watch(settingProvider(SettingKeys.discreetNotifications)).value !=
+        'false',
+  );
+});
+
+final notificationServiceProvider = Provider<NotificationService>(
+  (ref) => NotificationService(),
+);
+
+/// The reminders that should currently be scheduled.
+final reminderPlanProvider = Provider<List<PlannedNotification>>((ref) {
+  final predictions = ref.watch(predictionsProvider);
+  return planReminders(
+    now: DateTime.now(),
+    settings: ref.watch(reminderSettingsProvider),
+    nextPeriod: predictions.isEmpty ? null : predictions.first.periodStart,
+    meds: [
+      for (final m in ref.watch(medicationsProvider).value ?? const [])
+        if (m.reminderMinute != null)
+          MedReminder(
+            id: m.id,
+            name: m.name,
+            dose: m.dose,
+            minute: m.reminderMinute!,
+            schedule: MedSchedule(
+              start: m.startDate,
+              end: m.endDate,
+              activeDays: m.activeDays,
+              breakDays: m.breakDays,
+            ),
+          ),
+    ],
+  );
+});

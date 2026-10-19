@@ -24,7 +24,7 @@ import '../db/database.dart';
 /// The format is documented so data can always be recovered without the app.
 const _plainFormat = 'comma-backup';
 const _encryptedFormat = 'comma-backup-encrypted';
-const _version = 4;
+const _version = 5;
 const _maxIterations = 10000000;
 
 class BackupException implements Exception {
@@ -167,6 +167,8 @@ Future<Map<String, Object?>> exportBackup(AppDatabase db) async {
   final symptoms = await db.select(db.symptomEntries).get();
   final sex = await db.select(db.sexEntries).get();
   final tags = await db.select(db.customTags).get();
+  final meds = await db.select(db.medications).get();
+  final medLogs = await db.select(db.medicationLogs).get();
   final settings = await db.select(db.settings).get();
   return {
     'format': _plainFormat,
@@ -190,6 +192,24 @@ Future<Map<String, Object?>> exportBackup(AppDatabase db) async {
         },
     ],
     'customTags': {for (final t in tags) t.key: t.label},
+    'medications': [
+      for (final m in meds)
+        {
+          'id': m.id,
+          'name': m.name,
+          if (m.dose != null) 'dose': m.dose,
+          'isContraceptive': m.isContraceptive,
+          if (m.reminderMinute != null) 'reminderMinute': m.reminderMinute,
+          'startDate': _day(m.startDate),
+          if (m.endDate != null) 'endDate': _day(m.endDate!),
+          'activeDays': m.activeDays,
+          'breakDays': m.breakDays,
+        },
+    ],
+    'medicationLogs': [
+      for (final l in medLogs)
+        {'date': _day(l.date), 'medicationId': l.medicationId},
+    ],
     'symptomEntries': [
       for (final s in symptoms)
         {'date': _day(s.date), 'symptom': s.symptom, 'severity': s.severity},
@@ -217,6 +237,8 @@ Future<int> importBackup(AppDatabase db, Map<String, Object?> backup) async {
   final List<SymptomEntriesCompanion> symptoms;
   final List<SexEntriesCompanion> sex;
   final List<CustomTagsCompanion> tags;
+  final List<MedicationsCompanion> meds;
+  final List<MedicationLogsCompanion> medLogs;
   final List<SettingsCompanion> settings;
   try {
     final rawLogs = (backup['dayLogs'] as List).cast<Map<String, Object?>>();
@@ -267,6 +289,30 @@ Future<int> importBackup(AppDatabase db, Map<String, Object?> backup) async {
           label: e.value as String,
         ),
     ];
+    // Added in version 5.
+    meds = [
+      for (final raw in (backup['medications'] as List?) ?? const [])
+        MedicationsCompanion.insert(
+          id: Value((raw as Map)['id'] as int),
+          name: raw['name'] as String,
+          dose: Value(raw['dose'] as String?),
+          isContraceptive: Value(raw['isContraceptive'] as bool? ?? false),
+          reminderMinute: Value(raw['reminderMinute'] as int?),
+          startDate: _parseDay(raw['startDate']),
+          endDate: Value(
+            raw['endDate'] == null ? null : _parseDay(raw['endDate']),
+          ),
+          activeDays: Value(raw['activeDays'] as int? ?? 0),
+          breakDays: Value(raw['breakDays'] as int? ?? 0),
+        ),
+    ];
+    medLogs = [
+      for (final raw in (backup['medicationLogs'] as List?) ?? const [])
+        MedicationLogsCompanion.insert(
+          date: _parseDay((raw as Map)['date']),
+          medicationId: raw['medicationId'] as int,
+        ),
+    ];
     settings = [
       for (final e in (backup['settings'] as Map).entries)
         SettingsCompanion.insert(
@@ -285,6 +331,8 @@ Future<int> importBackup(AppDatabase db, Map<String, Object?> backup) async {
       b.insertAll(db.symptomEntries, symptoms);
       b.insertAll(db.sexEntries, sex);
       b.insertAll(db.customTags, tags);
+      b.insertAll(db.medications, meds);
+      b.insertAll(db.medicationLogs, medLogs);
       b.insertAll(db.settings, settings);
     });
   });

@@ -8,16 +8,28 @@ import 'tables.dart';
 part 'database.g.dart';
 
 @DriftDatabase(
-  tables: [DayLogs, SymptomEntries, SexEntries, CustomTags, Settings],
+  tables: [
+    DayLogs,
+    SymptomEntries,
+    SexEntries,
+    CustomTags,
+    Medications,
+    MedicationLogs,
+    Settings,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    beforeOpen: (details) async {
+      // Needed for medication logs to be removed with their medication.
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
     onUpgrade: stepByStep(
       from1To2: (m, schema) async {
         // Sex moved from one value per day to separate entries.
@@ -40,6 +52,10 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(schema.dayLogs, schema.dayLogs.sleepHours);
         await m.addColumn(schema.dayLogs, schema.dayLogs.weightKg);
         await m.createTable(schema.customTags);
+      },
+      from4To5: (m, schema) async {
+        await m.createTable(schema.medications);
+        await m.createTable(schema.medicationLogs);
       },
     ),
   );
@@ -177,6 +193,36 @@ class AppDatabase extends _$AppDatabase {
     await (delete(symptomEntries)..where((t) => t.symptom.equals(key))).go();
     await (delete(customTags)..where((t) => t.key.equals(key))).go();
   });
+
+  Stream<List<Medication>> watchMedications() =>
+      (select(medications)..orderBy([(t) => OrderingTerm.asc(t.name)])).watch();
+
+  Future<int> saveMedication(MedicationsCompanion med) =>
+      into(medications).insertOnConflictUpdate(med);
+
+  Future<void> deleteMedication(int id) =>
+      (delete(medications)..where((t) => t.id.equals(id))).go();
+
+  Stream<Set<int>> watchMedicationsTaken(DateTime day) =>
+      (select(medicationLogs)..where((t) => t.date.equals(dateOnly(day))))
+          .map((r) => r.medicationId)
+          .watch()
+          .map((ids) => ids.toSet());
+
+  Future<void> setMedicationTaken(DateTime day, int medicationId, bool taken) {
+    final row = MedicationLogsCompanion.insert(
+      date: dateOnly(day),
+      medicationId: medicationId,
+    );
+    return taken
+        ? into(medicationLogs).insertOnConflictUpdate(row)
+        : (delete(medicationLogs)..where(
+                (t) =>
+                    t.date.equals(dateOnly(day)) &
+                    t.medicationId.equals(medicationId),
+              ))
+              .go();
+  }
 
   Stream<String?> watchSetting(String key) =>
       (select(settings)..where((t) => t.key.equals(key)))

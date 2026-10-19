@@ -531,10 +531,242 @@ i1.GeneratedColumn<String> _column_21(String aliasedName) =>
       type: i1.DriftSqlType.string,
       $customConstraints: 'NOT NULL',
     );
+
+final class Schema5 extends i0.VersionedSchema {
+  Schema5({required super.database}) : super(version: 5);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    dayLogs,
+    symptomEntries,
+    sexEntries,
+    customTags,
+    medications,
+    medicationLogs,
+    settings,
+  ];
+  late final Shape5 dayLogs = Shape5(
+    source: i0.VersionedTable(
+      entityName: 'day_logs',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(date)'],
+      columns: [
+        _column_0,
+        _column_1,
+        _column_2,
+        _column_3,
+        _column_4,
+        _column_5,
+        _column_6,
+        _column_7,
+        _column_17,
+        _column_18,
+        _column_19,
+        _column_20,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape1 symptomEntries = Shape1(
+    source: i0.VersionedTable(
+      entityName: 'symptom_entries',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(date, symptom)'],
+      columns: [_column_0, _column_8, _column_9],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape4 sexEntries = Shape4(
+    source: i0.VersionedTable(
+      entityName: 'sex_entries',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_10,
+        _column_0,
+        _column_16,
+        _column_11,
+        _column_12,
+        _column_13,
+        _column_7,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape6 customTags = Shape6(
+    source: i0.VersionedTable(
+      entityName: 'custom_tags',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY("key")'],
+      columns: [_column_14, _column_21],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape7 medications = Shape7(
+    source: i0.VersionedTable(
+      entityName: 'medications',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [
+        _column_10,
+        _column_22,
+        _column_23,
+        _column_24,
+        _column_25,
+        _column_26,
+        _column_27,
+        _column_28,
+        _column_29,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape8 medicationLogs = Shape8(
+    source: i0.VersionedTable(
+      entityName: 'medication_logs',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(date, medication_id)'],
+      columns: [_column_0, _column_30],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape3 settings = Shape3(
+    source: i0.VersionedTable(
+      entityName: 'settings',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY("key")'],
+      columns: [_column_14, _column_15],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+}
+
+class Shape7 extends i0.VersionedTable {
+  Shape7({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get name =>
+      columnsByName['name']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get dose =>
+      columnsByName['dose']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get isContraceptive =>
+      columnsByName['is_contraceptive']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get reminderMinute =>
+      columnsByName['reminder_minute']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get startDate =>
+      columnsByName['start_date']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get endDate =>
+      columnsByName['end_date']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get activeDays =>
+      columnsByName['active_days']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get breakDays =>
+      columnsByName['break_days']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<String> _column_22(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'name',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_23(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'dose',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<int> _column_24(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'is_contraceptive',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints:
+          'NOT NULL DEFAULT 0 CHECK (is_contraceptive IN (0, 1))',
+      defaultValue: const i1.CustomExpression('0'),
+    );
+i1.GeneratedColumn<int> _column_25(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'reminder_minute',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<String> _column_26(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'start_date',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_27(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'end_date',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NULL',
+    );
+i1.GeneratedColumn<int> _column_28(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'active_days',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL DEFAULT 0',
+      defaultValue: const i1.CustomExpression('0'),
+    );
+i1.GeneratedColumn<int> _column_29(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'break_days',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL DEFAULT 0',
+      defaultValue: const i1.CustomExpression('0'),
+    );
+
+class Shape8 extends i0.VersionedTable {
+  Shape8({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get date =>
+      columnsByName['date']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get medicationId =>
+      columnsByName['medication_id']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<int> _column_30(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'medication_id',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints:
+          'NOT NULL REFERENCES medications(id)ON DELETE CASCADE',
+    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
   required Future<void> Function(i1.Migrator m, Schema4 schema) from3To4,
+  required Future<void> Function(i1.Migrator m, Schema5 schema) from4To5,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -553,6 +785,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from3To4(migrator, schema);
         return 4;
+      case 4:
+        final schema = Schema5(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from4To5(migrator, schema);
+        return 5;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -563,10 +800,12 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
   required Future<void> Function(i1.Migrator m, Schema4 schema) from3To4,
+  required Future<void> Function(i1.Migrator m, Schema5 schema) from4To5,
 }) => i0.VersionedSchema.stepByStepHelper(
   step: migrationSteps(
     from1To2: from1To2,
     from2To3: from2To3,
     from3To4: from3To4,
+    from4To5: from4To5,
   ),
 );

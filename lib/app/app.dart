@@ -41,15 +41,47 @@ class _Root extends ConsumerWidget {
   }
 }
 
-class HomeShell extends StatefulWidget {
+class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
 
   @override
-  State<HomeShell> createState() => _HomeShellState();
+  ConsumerState<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends State<HomeShell> {
+class _HomeShellState extends ConsumerState<HomeShell>
+    with WidgetsBindingObserver {
   var _index = 0;
+  String? _scheduled;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Keep OS reminders in step with the data; only reschedule on change.
+    ref.listenManual(reminderPlanProvider, (_, plan) {
+      final signature = plan
+          .map((n) => '${n.id}@${n.when}:${n.title}:${n.body}')
+          .join('|');
+      if (signature == _scheduled) return;
+      _scheduled = signature;
+      ref.read(notificationServiceProvider).apply(plan);
+    }, fireImmediately: true);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Reminders are planned two weeks ahead, so top them up on every return.
+    if (state == AppLifecycleState.resumed) {
+      ref.invalidate(todayProvider);
+      ref.invalidate(reminderPlanProvider);
+    }
+  }
 
   static const _screens = [
     TodayScreen(),

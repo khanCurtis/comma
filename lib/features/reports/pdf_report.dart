@@ -190,6 +190,25 @@ Future<Uint8List> buildPdfReport(
           ),
         ],
 
+        if (data.medications.isNotEmpty) ...[
+          heading('Medications and birth control'),
+          table(
+            ['Name', 'Dose', 'Schedule', 'Taken'],
+            [
+              for (final m in data.medications)
+                [
+                  m.isContraceptive ? '${m.name} (birth control)' : m.name,
+                  m.dose ?? '–',
+                  m.breakDays > 0
+                      ? '${m.activeDays} days on, ${m.breakDays} off'
+                      : 'Daily',
+                  '${day.format(m.startDate)} – '
+                      '${m.endDate == null ? 'ongoing' : day.format(m.endDate!)}',
+                ],
+            ],
+          ),
+        ],
+
         if (data.pregnancyTests.isNotEmpty) ...[
           heading('Pregnancy tests'),
           for (final (date, result) in data.pregnancyTests)

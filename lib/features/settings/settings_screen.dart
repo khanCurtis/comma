@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 
 import '../../app/providers.dart';
 import '../../domain/units.dart';
+import '../medications/medications_screen.dart';
+import '../reminders/reminders_screen.dart';
 import '../reports/reports_screen.dart';
 import 'backup_flow.dart';
 
@@ -91,6 +93,18 @@ class SettingsScreen extends ConsumerWidget {
                 .read(databaseProvider)
                 .setSetting(SettingKeys.weightUnit, v.single.name),
           ),
+        ),
+        ListTile(
+          leading: const Icon(Icons.notifications_outlined),
+          title: const Text('Reminders'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => openReminders(context),
+        ),
+        ListTile(
+          leading: const Icon(Icons.medication_outlined),
+          title: const Text('Medications & birth control'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => openMedications(context),
         ),
         ListTile(
           leading: const Icon(Icons.label_outline),

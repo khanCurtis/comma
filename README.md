@@ -26,7 +26,8 @@ Cycle data is some of the most sensitive health data a person can have. Many pop
 - Basal body temperature (BBT)
 - Ovulation (LH) and pregnancy test results
 - Sexual activity: log partnered sex and masturbation separately, as many times a day as needed, with optional time, protection used (for partnered sex), orgasm and notes
-- Medications and birth control, with pill reminders
+- Medications and birth control, including pill packs with break weeks (21+7, 24+4, 84+7), ticked off each day
+- Reminders for pills, an upcoming period, and daily logging, scheduled on the phone with discreet wording by default
 - Sleep, weight and free-text notes
 - Your own custom tags
 

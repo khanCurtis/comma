@@ -7,7 +7,7 @@ Comma backups (`.comma` files) are UTF-8 JSON. This document lets anyone recover
 ```json
 {
   "format": "comma-backup",
-  "version": 4,
+  "version": 5,
   "exportedAt": "2026-10-19T14:03:00.000Z",
   "dayLogs": [
     {
@@ -32,6 +32,11 @@ Comma backups (`.comma` files) are UTF-8 JSON. This document lets anyone recover
     { "date": "2026-10-14", "kind": "partnered", "minuteOfDay": 1350, "protection": "condom", "orgasm": true, "note": "free text" }
   ],
   "customTags": { "custom.migraine_meds": "Migraine meds" },
+  "medications": [
+    { "id": 1, "name": "Birth control pill", "isContraceptive": true, "reminderMinute": 1260,
+      "startDate": "2026-09-01", "activeDays": 21, "breakDays": 7 }
+  ],
+  "medicationLogs": [ { "date": "2026-10-01", "medicationId": 1 } ],
   "settings": { "default_cycle_length": "28" }
 }
 ```
@@ -48,6 +53,8 @@ Comma backups (`.comma` files) are UTF-8 JSON. This document lets anyone recover
 - `bbt` is in °C, and `weightKg` is in kilograms. The app converts them for display.
 - `products` is how many pads, tampons and so on were used that day.
 - `energy` is one of: `low`, `normal`, `high`.
+- `medications`: `startDate` is day 1 of the first pack when a pack pattern is set. `activeDays` and `breakDays` describe the pattern (0 and 0 means taken every day). `endDate` is present once the medication was stopped. `reminderMinute` is minutes after midnight.
+- `medicationLogs` holds one entry per medication per day it was marked as taken.
 - `customTags` maps tag keys to their labels. A tag logged on a day shows up in `symptomEntries`, with the tag key as its `symptom`.
 - `symptom` keys are listed in `lib/domain/models/symptoms.dart`. Moods start with `mood.`, and custom entries start with `custom.`.
 
@@ -91,5 +98,6 @@ print(json.dumps(json.loads(plain), indent=2))
 | 2 | Sex moved to `sexEntries`, allowing several per day. Comma still imports version 1 files. |
 | 3 | Added `kind` to sex entries (`partnered` or `solo`). Older versions of the app refuse these files, so solo entries are never imported as partnered. |
 | 4 | Added `products`, `energy`, `sleepHours` and `weightKg` to day logs, and `customTags`. |
+| 5 | Added `medications` and `medicationLogs`. |
 
 `version` goes up only when an older app couldn't read the new file correctly. The app refuses to import backups with a newer version than it understands, instead of losing data.

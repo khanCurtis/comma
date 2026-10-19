@@ -10,6 +10,7 @@ import '../../domain/dates.dart';
 import '../../domain/models/day_log.dart';
 import '../../domain/models/symptoms.dart';
 import '../../domain/units.dart';
+import '../medications/medications_screen.dart';
 import '../sex/sex_entry_sheet.dart';
 
 final _dayProvider = StreamProvider.family<DayLog?, DateTime>(
@@ -287,6 +288,7 @@ class DayLogSheet extends ConsumerWidget {
                       'exercise'
                 : 'Manage tags in Settings',
           ),
+          section('Medications', MedicationChecklist(day: day)),
           section('Sexual activity', SexEntriesList(day: day)),
           section(
             'Notes',

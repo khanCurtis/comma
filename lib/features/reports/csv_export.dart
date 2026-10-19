@@ -126,3 +126,17 @@ String sexEntriesCsv(List<SexEntry> entries) => _csv(
       ],
   ],
 );
+
+/// One row per medication per day it was marked as taken.
+String medicationsCsv(List<Medication> meds, List<MedicationLog> logs) {
+  final byId = {for (final m in meds) m.id: m};
+  final sorted = [...logs]..sort((a, b) => a.date.compareTo(b.date));
+  return _csv(
+    ['date', 'medication', 'dose', 'birth_control'],
+    [
+      for (final l in sorted)
+        if (byId[l.medicationId] case final m?)
+          [_day(l.date), m.name, m.dose, m.isContraceptive ? 'yes' : ''],
+    ],
+  );
+}
