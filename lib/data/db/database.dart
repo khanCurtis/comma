@@ -55,6 +55,17 @@ class AppDatabase extends _$AppDatabase {
     return query.map((row) => row.date).watch();
   }
 
+  /// Days with a temperature or LH test logged, oldest first.
+  Stream<List<DayLog>> watchFertilitySignals() {
+    final query = select(dayLogs)
+      ..where((t) => t.bbt.isNotNull() | t.lhTest.isNotNull())
+      ..orderBy([(t) => OrderingTerm.asc(t.date)]);
+    return query.watch();
+  }
+
+  Stream<List<SymptomEntry>> watchAllSymptomEntries() =>
+      select(symptomEntries).watch();
+
   Stream<List<DayLog>> watchRange(DateTime from, DateTime to) {
     final query = select(dayLogs)
       ..where((t) => t.date.isBetweenValues(dateOnly(from), dateOnly(to)))

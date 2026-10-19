@@ -33,6 +33,18 @@ Comma uses the "3 over 6" rule from fertility-awareness methods:
 
 A positive LH (ovulation) test means ovulation is likely within about 24–36 hours.
 
+## Using confirmed ovulation (`ovulation.dart`)
+For each cycle, Comma looks for ovulation after the period ends:
+1. A temperature shift (the rule above) is used first.
+2. Otherwise, ovulation is placed on the day after the first positive or peak LH test.
+
+What changes once ovulation is known:
+- Your **personal luteal phase length** is learned from completed cycles with known ovulation (see above).
+- In the **current cycle**, the next period is predicted as known ovulation + luteal phase length, instead of being counted from the last period. This is usually more accurate, especially with irregular cycles.
+
+## Symptom patterns (`patterns.dart`)
+Comma groups each logged symptom by the phase it happened in, using complete cycles only. The phases are: period, follicular, fertile window, ovulation day, and luteal (the days before your next period). Ovulation comes from the confirmed date when there is one, otherwise from the next period start minus your luteal length. Symptoms logged on at least 3 days are shown, along with the phase they happen in most often.
+
 ## Things to discuss with a doctor (`irregularity.dart`)
 These thresholds come from the FIGO System 1 definitions of normal uterine bleeding (Munro et al., *Int J Gynecol Obstet* 2018):
 

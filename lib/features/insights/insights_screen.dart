@@ -5,6 +5,12 @@ import 'package:intl/intl.dart';
 import '../../app/providers.dart';
 import '../../domain/dates.dart';
 import '../../domain/engine/irregularity.dart';
+import '../../domain/engine/ovulation.dart';
+import '../../domain/engine/patterns.dart';
+import '../../domain/engine/status.dart';
+import '../../domain/models/symptoms.dart';
+import '../../domain/units.dart';
+import 'charts.dart';
 import '../../domain/models/day_log.dart';
 import '../sex/sex_entry_sheet.dart';
 
@@ -26,6 +32,25 @@ class InsightsScreen extends ConsumerWidget {
     int countSince(DateTime from, SexKind kind) =>
         sex.where((e) => e.kind == kind && !e.date.isBefore(from)).length;
     final monthAgo = addDays(today, -29);
+    final ovulations = ref.watch(ovulationsProvider);
+    final patterns = ref.watch(symptomPatternsProvider);
+    final tagLabels = {
+      for (final t in ref.watch(customTagsProvider).value ?? const [])
+        t.key: t.label,
+    };
+    final range = cycleLengthRange(cycles);
+    final complete = cycles.where((c) => c.isComplete).toList();
+    final tempUnit = ref.watch(tempUnitProvider);
+    final temps = cycleStart == null
+        ? const <(DateTime, double)>[]
+        : <(DateTime, double)>[
+            for (final FertilitySignal s
+                in ref.watch(fertilitySignalsProvider).value ?? const [])
+              if (s.bbt != null &&
+                  !s.bbtDisturbed &&
+                  !s.date.isBefore(cycleStart))
+                (s.date, toDisplayTemp(s.bbt!, tempUnit)),
+          ];
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -42,6 +67,64 @@ class InsightsScreen extends ConsumerWidget {
               _Stat('Cycles', '${stats.sampleSize}'),
             ],
           ),
+        if (range != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            range.shortest == range.longest
+                ? 'Your cycles have all been ${range.shortest} days.'
+                : 'Your cycles range from ${range.shortest} to '
+                      '${range.longest} days (a spread of '
+                      '${range.longest - range.shortest}).',
+          ),
+        ],
+        if (complete.length >= 2) ...[
+          const SizedBox(height: 24),
+          Text('Cycle length', style: text.titleMedium),
+          Text(
+            'Dashed lines show the typical 24–38 day range',
+            style: text.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          CycleLengthChart(
+            cycles: complete.length > 12
+                ? complete.sublist(complete.length - 12)
+                : complete,
+          ),
+        ],
+        if (temps.length >= 3) ...[
+          const SizedBox(height: 24),
+          Text('Temperature this cycle', style: text.titleMedium),
+          if (ovulations[cycleStart] case final o?)
+            Text(
+              o.source == OvulationSource.bbt
+                  ? 'Temperature shift suggests ovulation on '
+                        '${DateFormat.MMMd().format(o.date)}'
+                  : 'LH test suggests ovulation on '
+                        '${DateFormat.MMMd().format(o.date)}',
+              style: text.bodySmall,
+            ),
+          const SizedBox(height: 12),
+          TemperatureChart(
+            cycleStart: cycleStart!,
+            readings: temps,
+            unitSymbol: tempSymbol(tempUnit),
+            ovulation: ovulations[cycleStart]?.date,
+          ),
+        ],
+        if (patterns.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          Text('Symptom patterns', style: text.titleMedium),
+          Text('From your complete cycles', style: text.bodySmall),
+          for (final p in patterns.take(8))
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(tagLabels[p.symptom] ?? symptomLabel(p.symptom)),
+              subtitle: Text(
+                'Mostly ${_phaseName(p.peakPhase)} '
+                '(${p.byPhase[p.peakPhase]} of ${p.total} days)',
+              ),
+            ),
+        ],
         if (sex.isNotEmpty) ...[
           const SizedBox(height: 24),
           Text('Sexual activity', style: text.titleMedium),
@@ -88,13 +171,28 @@ class InsightsScreen extends ConsumerWidget {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(fmt.format(c.start)),
-              subtitle: Text('Period ${c.periodLength} days'),
+              subtitle: Text(
+                [
+                  'Period ${c.periodLength} days',
+                  if (ovulations[c.start] case final o?)
+                    'ovulation ${DateFormat.MMMd().format(o.date)} '
+                        '(${o.source == OvulationSource.bbt ? 'temperature' : 'LH test'})',
+                ].join(', '),
+              ),
               trailing: Text(c.length == null ? 'Current' : '${c.length} days'),
             ),
         ],
       ],
     );
   }
+
+  static String _phaseName(Phase phase) => switch (phase) {
+    Phase.period => 'during your period',
+    Phase.follicular => 'after your period, before your fertile window',
+    Phase.fertile => 'in your fertile window',
+    Phase.ovulation => 'around ovulation',
+    Phase.luteal => 'in the days before your period',
+  };
 
   static String _flagText(Irregularity f) => switch (f.kind) {
     IrregularityKind.shortCycle => 'Short cycle (${f.days} days)',

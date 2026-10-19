@@ -7,6 +7,8 @@ import '../data/db/database.dart';
 import '../domain/dates.dart';
 import '../domain/engine/cycle_builder.dart';
 import '../domain/engine/irregularity.dart';
+import '../domain/engine/ovulation.dart';
+import '../domain/engine/patterns.dart';
 import '../domain/engine/predictor.dart';
 import '../domain/models/cycle.dart';
 import '../domain/units.dart';
@@ -45,6 +47,57 @@ final statsProvider = Provider<CycleStats?>((ref) {
   return computeStats(cycles);
 });
 
+final fertilitySignalsProvider = StreamProvider<List<FertilitySignal>>(
+  (ref) => ref
+      .watch(databaseProvider)
+      .watchFertilitySignals()
+      .map(
+        (logs) => [
+          for (final l in logs)
+            FertilitySignal(
+              l.date,
+              bbt: l.bbt,
+              bbtDisturbed: l.bbtDisturbed,
+              lh: l.lhTest,
+            ),
+        ],
+      ),
+);
+
+/// Confirmed ovulation per cycle start, from temperature or LH tests.
+final ovulationsProvider = Provider<Map<DateTime, ConfirmedOvulation>>((ref) {
+  final cycles = ref.watch(cyclesProvider).value ?? const [];
+  final signals = ref.watch(fertilitySignalsProvider).value ?? const [];
+  return confirmOvulations(cycles, signals);
+});
+
+final lutealLengthProvider = Provider<int>((ref) {
+  final cycles = ref.watch(cyclesProvider).value ?? const [];
+  final ovulations = ref.watch(ovulationsProvider);
+  return personalLutealLength(cycles, {
+    for (final e in ovulations.entries) e.key: e.value.date,
+  });
+});
+
+final symptomPatternsProvider = Provider<List<SymptomPattern>>((ref) {
+  final cycles = ref.watch(cyclesProvider).value ?? const [];
+  final entries =
+      ref.watch(_allSymptomEntriesProvider).value ?? const <SymptomEntry>[];
+  return symptomPatterns(
+    cycles,
+    [for (final e in entries) (e.date, e.symptom)],
+    ovulations: {
+      for (final e in ref.watch(ovulationsProvider).entries)
+        e.key: e.value.date,
+    },
+    lutealLength: ref.watch(lutealLengthProvider),
+  );
+});
+
+final _allSymptomEntriesProvider = StreamProvider(
+  (ref) => ref.watch(databaseProvider).watchAllSymptomEntries(),
+);
+
 final predictionsProvider = Provider<List<CyclePrediction>>((ref) {
   final cycles = ref.watch(cyclesProvider).value ?? const [];
   int? setting(String key) =>
@@ -54,6 +107,10 @@ final predictionsProvider = Provider<List<CyclePrediction>>((ref) {
     count: 6,
     defaultCycleLength: setting(SettingKeys.cycleLength) ?? 28,
     defaultPeriodLength: setting(SettingKeys.periodLength) ?? 5,
+    lutealLength: ref.watch(lutealLengthProvider),
+    currentOvulation: cycles.isEmpty
+        ? null
+        : ref.watch(ovulationsProvider)[cycles.last.start]?.date,
   );
 });
 

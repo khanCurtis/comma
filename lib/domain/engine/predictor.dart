@@ -103,6 +103,7 @@ CycleStats? computeStats(
 ///
 /// [defaultCycleLength] and [defaultPeriodLength] are used until there are
 /// complete cycles to learn from (e.g. the values entered during onboarding).
+/// [currentOvulation], when known, anchors the next period to it.
 List<CyclePrediction> predictUpcoming(
   List<Cycle> cycles, {
   int count = 1,
@@ -110,6 +111,7 @@ List<CyclePrediction> predictUpcoming(
   int defaultPeriodLength = 5,
   int lutealLength = 14,
   Set<DateTime> excludedStarts = const {},
+  DateTime? currentOvulation,
 }) {
   if (cycles.isEmpty) return const [];
 
@@ -130,8 +132,14 @@ List<CyclePrediction> predictUpcoming(
   final predictions = <CyclePrediction>[];
   var start = cycles.last.start;
   for (var i = 1; i <= count; i++) {
-    start = addDays(start, cycleLength);
-    final ovulation = addDays(start, -lutealLength);
+    // Once ovulation is known for the current cycle, the next period is
+    // about one luteal phase away from it.
+    start = i == 1 && currentOvulation != null
+        ? addDays(currentOvulation, lutealLength)
+        : addDays(start, cycleLength);
+    final ovulation = i == 1 && currentOvulation != null
+        ? dateOnly(currentOvulation)
+        : addDays(start, -lutealLength);
     predictions.add(
       CyclePrediction(
         periodStart: start,
