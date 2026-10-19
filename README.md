@@ -57,7 +57,7 @@ Cycle data is some of the most sensitive health data a person can have. Many pop
 - Share the report through your phone's share sheet (email, messaging, print, save to files)
 
 ### Privacy and security
-- Encrypted on-device database (SQLCipher)
+- Encrypted on-device database (SQLite3 Multiple Ciphers)
 - Optional app lock with PIN or biometrics
 - Discreet app icon and neutral notification text
 - Encrypted backup file that you control: save it anywhere, restore it anywhere

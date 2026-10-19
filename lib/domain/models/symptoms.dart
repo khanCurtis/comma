@@ -19,6 +19,9 @@ const physicalSymptoms = [
   SymptomDef('insomnia', 'Insomnia'),
   SymptomDef('diarrhea', 'Diarrhea'),
   SymptomDef('constipation', 'Constipation'),
+  SymptomDef('unusual_discharge', 'Unusual discharge'),
+  SymptomDef('pelvic_pain', 'Pelvic pain'),
+  SymptomDef('dizziness', 'Dizziness'),
 ];
 
 const moods = [
@@ -31,6 +34,8 @@ const moods = [
   SymptomDef('mood.mood_swings', 'Mood swings'),
   SymptomDef('mood.low_energy', 'Low energy'),
 ];
+
+const severityLabels = ['', 'mild', 'moderate', 'severe'];
 
 String symptomLabel(String key) {
   for (final s in [...physicalSymptoms, ...moods]) {

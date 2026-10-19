@@ -24,7 +24,7 @@ import '../db/database.dart';
 /// The format is documented so data can always be recovered without the app.
 const _plainFormat = 'comma-backup';
 const _encryptedFormat = 'comma-backup-encrypted';
-const _version = 3;
+const _version = 4;
 const _maxIterations = 10000000;
 
 class BackupException implements Exception {
@@ -166,6 +166,7 @@ Future<Map<String, Object?>> exportBackup(AppDatabase db) async {
   final logs = await db.select(db.dayLogs).get();
   final symptoms = await db.select(db.symptomEntries).get();
   final sex = await db.select(db.sexEntries).get();
+  final tags = await db.select(db.customTags).get();
   final settings = await db.select(db.settings).get();
   return {
     'format': _plainFormat,
@@ -182,8 +183,13 @@ Future<Map<String, Object?>> exportBackup(AppDatabase db) async {
           if (l.lhTest != null) 'lhTest': l.lhTest!.name,
           if (l.pregnancyTest != null) 'pregnancyTest': l.pregnancyTest!.name,
           if (l.note != null) 'note': l.note,
+          if (l.products != null) 'products': l.products,
+          if (l.energy != null) 'energy': l.energy!.name,
+          if (l.sleepHours != null) 'sleepHours': l.sleepHours,
+          if (l.weightKg != null) 'weightKg': l.weightKg,
         },
     ],
+    'customTags': {for (final t in tags) t.key: t.label},
     'symptomEntries': [
       for (final s in symptoms)
         {'date': _day(s.date), 'symptom': s.symptom, 'severity': s.severity},
@@ -210,6 +216,7 @@ Future<int> importBackup(AppDatabase db, Map<String, Object?> backup) async {
   final List<DayLogsCompanion> logs;
   final List<SymptomEntriesCompanion> symptoms;
   final List<SexEntriesCompanion> sex;
+  final List<CustomTagsCompanion> tags;
   final List<SettingsCompanion> settings;
   try {
     final rawLogs = (backup['dayLogs'] as List).cast<Map<String, Object?>>();
@@ -252,6 +259,14 @@ Future<int> importBackup(AppDatabase db, Map<String, Object?> backup) async {
                 note: Value(raw['note'] as String?),
               ),
           ];
+    tags = [
+      // Added in version 4.
+      for (final e in ((backup['customTags'] as Map?) ?? const {}).entries)
+        CustomTagsCompanion.insert(
+          key: e.key as String,
+          label: e.value as String,
+        ),
+    ];
     settings = [
       for (final e in (backup['settings'] as Map).entries)
         SettingsCompanion.insert(
@@ -269,6 +284,7 @@ Future<int> importBackup(AppDatabase db, Map<String, Object?> backup) async {
       b.insertAll(db.dayLogs, logs);
       b.insertAll(db.symptomEntries, symptoms);
       b.insertAll(db.sexEntries, sex);
+      b.insertAll(db.customTags, tags);
       b.insertAll(db.settings, settings);
     });
   });

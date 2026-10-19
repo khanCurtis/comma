@@ -15,7 +15,7 @@ This is a **clean-room, independent implementation** of features common to cycle
 | Concern | Choice | Why |
 |---|---|---|
 | Framework | **Flutter (Dart)** | One codebase for Android and iOS; F-Droid accepts Flutter apps |
-| Database | **drift** + **sqlcipher_flutter_libs** | Typed SQL, migrations, and encryption at rest |
+| Database | **drift** + **SQLite3 Multiple Ciphers** (via the `sqlite3` build hook) | Typed SQL, migrations, and encryption at rest |
 | Key storage | **flutter_secure_storage** | Keeps the DB key in Android Keystore / iOS Keychain |
 | State | **Riverpod** | Testable, no codegen required |
 | PDF | **pdf** + **printing** packages | Builds the doctor report on-device and opens the native share/print sheet |

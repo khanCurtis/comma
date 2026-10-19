@@ -87,6 +87,48 @@ class $DayLogsTable extends DayLogs with TableInfo<$DayLogsTable, DayLog> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _productsMeta = const VerificationMeta(
+    'products',
+  );
+  @override
+  late final GeneratedColumn<int> products = GeneratedColumn<int>(
+    'products',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<EnergyLevel?, String> energy =
+      GeneratedColumn<String>(
+        'energy',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<EnergyLevel?>($DayLogsTable.$converterenergyn);
+  static const VerificationMeta _sleepHoursMeta = const VerificationMeta(
+    'sleepHours',
+  );
+  @override
+  late final GeneratedColumn<double> sleepHours = GeneratedColumn<double>(
+    'sleep_hours',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _weightKgMeta = const VerificationMeta(
+    'weightKg',
+  );
+  @override
+  late final GeneratedColumn<double> weightKg = GeneratedColumn<double>(
+    'weight_kg',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     date,
@@ -97,6 +139,10 @@ class $DayLogsTable extends DayLogs with TableInfo<$DayLogsTable, DayLog> {
     lhTest,
     pregnancyTest,
     note,
+    products,
+    energy,
+    sleepHours,
+    weightKg,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -137,6 +183,24 @@ class $DayLogsTable extends DayLogs with TableInfo<$DayLogsTable, DayLog> {
       context.handle(
         _noteMeta,
         note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('products')) {
+      context.handle(
+        _productsMeta,
+        products.isAcceptableOrUnknown(data['products']!, _productsMeta),
+      );
+    }
+    if (data.containsKey('sleep_hours')) {
+      context.handle(
+        _sleepHoursMeta,
+        sleepHours.isAcceptableOrUnknown(data['sleep_hours']!, _sleepHoursMeta),
+      );
+    }
+    if (data.containsKey('weight_kg')) {
+      context.handle(
+        _weightKgMeta,
+        weightKg.isAcceptableOrUnknown(data['weight_kg']!, _weightKgMeta),
       );
     }
     return context;
@@ -188,6 +252,24 @@ class $DayLogsTable extends DayLogs with TableInfo<$DayLogsTable, DayLog> {
         DriftSqlType.string,
         data['${effectivePrefix}note'],
       ),
+      products: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}products'],
+      ),
+      energy: $DayLogsTable.$converterenergyn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}energy'],
+        ),
+      ),
+      sleepHours: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}sleep_hours'],
+      ),
+      weightKg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}weight_kg'],
+      ),
     );
   }
 
@@ -214,6 +296,10 @@ class $DayLogsTable extends DayLogs with TableInfo<$DayLogsTable, DayLog> {
   $converterpregnancyTestn = JsonTypeConverter2.asNullable(
     $converterpregnancyTest,
   );
+  static JsonTypeConverter2<EnergyLevel, String, String> $converterenergy =
+      const EnumNameConverter<EnergyLevel>(EnergyLevel.values);
+  static JsonTypeConverter2<EnergyLevel?, String?, String?> $converterenergyn =
+      JsonTypeConverter2.asNullable($converterenergy);
 }
 
 class DayLog extends DataClass implements Insertable<DayLog> {
@@ -225,6 +311,14 @@ class DayLog extends DataClass implements Insertable<DayLog> {
   final TestResult? lhTest;
   final TestResult? pregnancyTest;
   final String? note;
+
+  /// Pads, tampons, etc. used that day.
+  final int? products;
+  final EnergyLevel? energy;
+  final double? sleepHours;
+
+  /// Always stored in kilograms; converted for display.
+  final double? weightKg;
   const DayLog({
     required this.date,
     required this.flow,
@@ -234,6 +328,10 @@ class DayLog extends DataClass implements Insertable<DayLog> {
     this.lhTest,
     this.pregnancyTest,
     this.note,
+    this.products,
+    this.energy,
+    this.sleepHours,
+    this.weightKg,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -264,6 +362,20 @@ class DayLog extends DataClass implements Insertable<DayLog> {
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
     }
+    if (!nullToAbsent || products != null) {
+      map['products'] = Variable<int>(products);
+    }
+    if (!nullToAbsent || energy != null) {
+      map['energy'] = Variable<String>(
+        $DayLogsTable.$converterenergyn.toSql(energy),
+      );
+    }
+    if (!nullToAbsent || sleepHours != null) {
+      map['sleep_hours'] = Variable<double>(sleepHours);
+    }
+    if (!nullToAbsent || weightKg != null) {
+      map['weight_kg'] = Variable<double>(weightKg);
+    }
     return map;
   }
 
@@ -283,6 +395,18 @@ class DayLog extends DataClass implements Insertable<DayLog> {
           ? const Value.absent()
           : Value(pregnancyTest),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      products: products == null && nullToAbsent
+          ? const Value.absent()
+          : Value(products),
+      energy: energy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(energy),
+      sleepHours: sleepHours == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sleepHours),
+      weightKg: weightKg == null && nullToAbsent
+          ? const Value.absent()
+          : Value(weightKg),
     );
   }
 
@@ -308,6 +432,12 @@ class DayLog extends DataClass implements Insertable<DayLog> {
         serializer.fromJson<String?>(json['pregnancyTest']),
       ),
       note: serializer.fromJson<String?>(json['note']),
+      products: serializer.fromJson<int?>(json['products']),
+      energy: $DayLogsTable.$converterenergyn.fromJson(
+        serializer.fromJson<String?>(json['energy']),
+      ),
+      sleepHours: serializer.fromJson<double?>(json['sleepHours']),
+      weightKg: serializer.fromJson<double?>(json['weightKg']),
     );
   }
   @override
@@ -330,6 +460,12 @@ class DayLog extends DataClass implements Insertable<DayLog> {
         $DayLogsTable.$converterpregnancyTestn.toJson(pregnancyTest),
       ),
       'note': serializer.toJson<String?>(note),
+      'products': serializer.toJson<int?>(products),
+      'energy': serializer.toJson<String?>(
+        $DayLogsTable.$converterenergyn.toJson(energy),
+      ),
+      'sleepHours': serializer.toJson<double?>(sleepHours),
+      'weightKg': serializer.toJson<double?>(weightKg),
     };
   }
 
@@ -342,6 +478,10 @@ class DayLog extends DataClass implements Insertable<DayLog> {
     Value<TestResult?> lhTest = const Value.absent(),
     Value<TestResult?> pregnancyTest = const Value.absent(),
     Value<String?> note = const Value.absent(),
+    Value<int?> products = const Value.absent(),
+    Value<EnergyLevel?> energy = const Value.absent(),
+    Value<double?> sleepHours = const Value.absent(),
+    Value<double?> weightKg = const Value.absent(),
   }) => DayLog(
     date: date ?? this.date,
     flow: flow ?? this.flow,
@@ -353,6 +493,10 @@ class DayLog extends DataClass implements Insertable<DayLog> {
         ? pregnancyTest.value
         : this.pregnancyTest,
     note: note.present ? note.value : this.note,
+    products: products.present ? products.value : this.products,
+    energy: energy.present ? energy.value : this.energy,
+    sleepHours: sleepHours.present ? sleepHours.value : this.sleepHours,
+    weightKg: weightKg.present ? weightKg.value : this.weightKg,
   );
   DayLog copyWithCompanion(DayLogsCompanion data) {
     return DayLog(
@@ -368,6 +512,12 @@ class DayLog extends DataClass implements Insertable<DayLog> {
           ? data.pregnancyTest.value
           : this.pregnancyTest,
       note: data.note.present ? data.note.value : this.note,
+      products: data.products.present ? data.products.value : this.products,
+      energy: data.energy.present ? data.energy.value : this.energy,
+      sleepHours: data.sleepHours.present
+          ? data.sleepHours.value
+          : this.sleepHours,
+      weightKg: data.weightKg.present ? data.weightKg.value : this.weightKg,
     );
   }
 
@@ -381,7 +531,11 @@ class DayLog extends DataClass implements Insertable<DayLog> {
           ..write('bbtDisturbed: $bbtDisturbed, ')
           ..write('lhTest: $lhTest, ')
           ..write('pregnancyTest: $pregnancyTest, ')
-          ..write('note: $note')
+          ..write('note: $note, ')
+          ..write('products: $products, ')
+          ..write('energy: $energy, ')
+          ..write('sleepHours: $sleepHours, ')
+          ..write('weightKg: $weightKg')
           ..write(')'))
         .toString();
   }
@@ -396,6 +550,10 @@ class DayLog extends DataClass implements Insertable<DayLog> {
     lhTest,
     pregnancyTest,
     note,
+    products,
+    energy,
+    sleepHours,
+    weightKg,
   );
   @override
   bool operator ==(Object other) =>
@@ -408,7 +566,11 @@ class DayLog extends DataClass implements Insertable<DayLog> {
           other.bbtDisturbed == this.bbtDisturbed &&
           other.lhTest == this.lhTest &&
           other.pregnancyTest == this.pregnancyTest &&
-          other.note == this.note);
+          other.note == this.note &&
+          other.products == this.products &&
+          other.energy == this.energy &&
+          other.sleepHours == this.sleepHours &&
+          other.weightKg == this.weightKg);
 }
 
 class DayLogsCompanion extends UpdateCompanion<DayLog> {
@@ -420,6 +582,10 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
   final Value<TestResult?> lhTest;
   final Value<TestResult?> pregnancyTest;
   final Value<String?> note;
+  final Value<int?> products;
+  final Value<EnergyLevel?> energy;
+  final Value<double?> sleepHours;
+  final Value<double?> weightKg;
   final Value<int> rowid;
   const DayLogsCompanion({
     this.date = const Value.absent(),
@@ -430,6 +596,10 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
     this.lhTest = const Value.absent(),
     this.pregnancyTest = const Value.absent(),
     this.note = const Value.absent(),
+    this.products = const Value.absent(),
+    this.energy = const Value.absent(),
+    this.sleepHours = const Value.absent(),
+    this.weightKg = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DayLogsCompanion.insert({
@@ -441,6 +611,10 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
     this.lhTest = const Value.absent(),
     this.pregnancyTest = const Value.absent(),
     this.note = const Value.absent(),
+    this.products = const Value.absent(),
+    this.energy = const Value.absent(),
+    this.sleepHours = const Value.absent(),
+    this.weightKg = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : date = Value(date);
   static Insertable<DayLog> custom({
@@ -452,6 +626,10 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
     Expression<String>? lhTest,
     Expression<String>? pregnancyTest,
     Expression<String>? note,
+    Expression<int>? products,
+    Expression<String>? energy,
+    Expression<double>? sleepHours,
+    Expression<double>? weightKg,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -463,6 +641,10 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
       if (lhTest != null) 'lh_test': lhTest,
       if (pregnancyTest != null) 'pregnancy_test': pregnancyTest,
       if (note != null) 'note': note,
+      if (products != null) 'products': products,
+      if (energy != null) 'energy': energy,
+      if (sleepHours != null) 'sleep_hours': sleepHours,
+      if (weightKg != null) 'weight_kg': weightKg,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -476,6 +658,10 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
     Value<TestResult?>? lhTest,
     Value<TestResult?>? pregnancyTest,
     Value<String?>? note,
+    Value<int?>? products,
+    Value<EnergyLevel?>? energy,
+    Value<double?>? sleepHours,
+    Value<double?>? weightKg,
     Value<int>? rowid,
   }) {
     return DayLogsCompanion(
@@ -487,6 +673,10 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
       lhTest: lhTest ?? this.lhTest,
       pregnancyTest: pregnancyTest ?? this.pregnancyTest,
       note: note ?? this.note,
+      products: products ?? this.products,
+      energy: energy ?? this.energy,
+      sleepHours: sleepHours ?? this.sleepHours,
+      weightKg: weightKg ?? this.weightKg,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -526,6 +716,20 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
     if (note.present) {
       map['note'] = Variable<String>(note.value);
     }
+    if (products.present) {
+      map['products'] = Variable<int>(products.value);
+    }
+    if (energy.present) {
+      map['energy'] = Variable<String>(
+        $DayLogsTable.$converterenergyn.toSql(energy.value),
+      );
+    }
+    if (sleepHours.present) {
+      map['sleep_hours'] = Variable<double>(sleepHours.value);
+    }
+    if (weightKg.present) {
+      map['weight_kg'] = Variable<double>(weightKg.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -543,6 +747,10 @@ class DayLogsCompanion extends UpdateCompanion<DayLog> {
           ..write('lhTest: $lhTest, ')
           ..write('pregnancyTest: $pregnancyTest, ')
           ..write('note: $note, ')
+          ..write('products: $products, ')
+          ..write('energy: $energy, ')
+          ..write('sleepHours: $sleepHours, ')
+          ..write('weightKg: $weightKg, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1281,6 +1489,214 @@ class SexEntriesCompanion extends UpdateCompanion<SexEntry> {
   }
 }
 
+class $CustomTagsTable extends CustomTags
+    with TableInfo<$CustomTagsTable, CustomTag> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CustomTagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [key, label];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'custom_tags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CustomTag> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('key')) {
+      context.handle(
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_labelMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  CustomTag map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CustomTag(
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      )!,
+    );
+  }
+
+  @override
+  $CustomTagsTable createAlias(String alias) {
+    return $CustomTagsTable(attachedDatabase, alias);
+  }
+}
+
+class CustomTag extends DataClass implements Insertable<CustomTag> {
+  final String key;
+  final String label;
+  const CustomTag({required this.key, required this.label});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['key'] = Variable<String>(key);
+    map['label'] = Variable<String>(label);
+    return map;
+  }
+
+  CustomTagsCompanion toCompanion(bool nullToAbsent) {
+    return CustomTagsCompanion(key: Value(key), label: Value(label));
+  }
+
+  factory CustomTag.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CustomTag(
+      key: serializer.fromJson<String>(json['key']),
+      label: serializer.fromJson<String>(json['label']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'key': serializer.toJson<String>(key),
+      'label': serializer.toJson<String>(label),
+    };
+  }
+
+  CustomTag copyWith({String? key, String? label}) =>
+      CustomTag(key: key ?? this.key, label: label ?? this.label);
+  CustomTag copyWithCompanion(CustomTagsCompanion data) {
+    return CustomTag(
+      key: data.key.present ? data.key.value : this.key,
+      label: data.label.present ? data.label.value : this.label,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CustomTag(')
+          ..write('key: $key, ')
+          ..write('label: $label')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(key, label);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CustomTag &&
+          other.key == this.key &&
+          other.label == this.label);
+}
+
+class CustomTagsCompanion extends UpdateCompanion<CustomTag> {
+  final Value<String> key;
+  final Value<String> label;
+  final Value<int> rowid;
+  const CustomTagsCompanion({
+    this.key = const Value.absent(),
+    this.label = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CustomTagsCompanion.insert({
+    required String key,
+    required String label,
+    this.rowid = const Value.absent(),
+  }) : key = Value(key),
+       label = Value(label);
+  static Insertable<CustomTag> custom({
+    Expression<String>? key,
+    Expression<String>? label,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (key != null) 'key': key,
+      if (label != null) 'label': label,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CustomTagsCompanion copyWith({
+    Value<String>? key,
+    Value<String>? label,
+    Value<int>? rowid,
+  }) {
+    return CustomTagsCompanion(
+      key: key ?? this.key,
+      label: label ?? this.label,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CustomTagsCompanion(')
+          ..write('key: $key, ')
+          ..write('label: $label, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -1492,6 +1908,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $DayLogsTable dayLogs = $DayLogsTable(this);
   late final $SymptomEntriesTable symptomEntries = $SymptomEntriesTable(this);
   late final $SexEntriesTable sexEntries = $SexEntriesTable(this);
+  late final $CustomTagsTable customTags = $CustomTagsTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -1501,6 +1918,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     dayLogs,
     symptomEntries,
     sexEntries,
+    customTags,
     settings,
   ];
   @override
@@ -1517,6 +1935,10 @@ typedef $$DayLogsTableCreateCompanionBuilder = DayLogsCompanion Function({
   Value<TestResult?> lhTest,
   Value<TestResult?> pregnancyTest,
   Value<String?> note,
+  Value<int?> products,
+  Value<EnergyLevel?> energy,
+  Value<double?> sleepHours,
+  Value<double?> weightKg,
   Value<int> rowid,
 });
 typedef $$DayLogsTableUpdateCompanionBuilder = DayLogsCompanion Function({
@@ -1528,6 +1950,10 @@ typedef $$DayLogsTableUpdateCompanionBuilder = DayLogsCompanion Function({
   Value<TestResult?> lhTest,
   Value<TestResult?> pregnancyTest,
   Value<String?> note,
+  Value<int?> products,
+  Value<EnergyLevel?> energy,
+  Value<double?> sleepHours,
+  Value<double?> weightKg,
   Value<int> rowid,
 });
 
@@ -1583,6 +2009,27 @@ class $$DayLogsTableFilterComposer
     column: $table.note,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<int> get products => $composableBuilder(
+    column: $table.products,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<EnergyLevel?, EnergyLevel, String>
+  get energy => $composableBuilder(
+    column: $table.energy,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<double> get sleepHours => $composableBuilder(
+    column: $table.sleepHours,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get weightKg => $composableBuilder(
+    column: $table.weightKg,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$DayLogsTableOrderingComposer
@@ -1633,6 +2080,26 @@ class $$DayLogsTableOrderingComposer
     column: $table.note,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get products => $composableBuilder(
+    column: $table.products,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get energy => $composableBuilder(
+    column: $table.energy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get sleepHours => $composableBuilder(
+    column: $table.sleepHours,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get weightKg => $composableBuilder(
+    column: $table.weightKg,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$DayLogsTableAnnotationComposer
@@ -1672,6 +2139,20 @@ class $$DayLogsTableAnnotationComposer
 
   GeneratedColumn<String> get note =>
       $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<int> get products =>
+      $composableBuilder(column: $table.products, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<EnergyLevel?, String> get energy =>
+      $composableBuilder(column: $table.energy, builder: (column) => column);
+
+  GeneratedColumn<double> get sleepHours => $composableBuilder(
+    column: $table.sleepHours,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get weightKg =>
+      $composableBuilder(column: $table.weightKg, builder: (column) => column);
 }
 
 class $$DayLogsTableTableManager
@@ -1710,6 +2191,10 @@ class $$DayLogsTableTableManager
                 Value<TestResult?> lhTest = const Value.absent(),
                 Value<TestResult?> pregnancyTest = const Value.absent(),
                 Value<String?> note = const Value.absent(),
+                Value<int?> products = const Value.absent(),
+                Value<EnergyLevel?> energy = const Value.absent(),
+                Value<double?> sleepHours = const Value.absent(),
+                Value<double?> weightKg = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DayLogsCompanion(
                 date: date,
@@ -1720,6 +2205,10 @@ class $$DayLogsTableTableManager
                 lhTest: lhTest,
                 pregnancyTest: pregnancyTest,
                 note: note,
+                products: products,
+                energy: energy,
+                sleepHours: sleepHours,
+                weightKg: weightKg,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1732,6 +2221,10 @@ class $$DayLogsTableTableManager
                 Value<TestResult?> lhTest = const Value.absent(),
                 Value<TestResult?> pregnancyTest = const Value.absent(),
                 Value<String?> note = const Value.absent(),
+                Value<int?> products = const Value.absent(),
+                Value<EnergyLevel?> energy = const Value.absent(),
+                Value<double?> sleepHours = const Value.absent(),
+                Value<double?> weightKg = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DayLogsCompanion.insert(
                 date: date,
@@ -1742,6 +2235,10 @@ class $$DayLogsTableTableManager
                 lhTest: lhTest,
                 pregnancyTest: pregnancyTest,
                 note: note,
+                products: products,
+                energy: energy,
+                sleepHours: sleepHours,
+                weightKg: weightKg,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -2188,6 +2685,148 @@ typedef $$SexEntriesTableProcessedTableManager =
       SexEntry,
       PrefetchHooks Function()
     >;
+typedef $$CustomTagsTableCreateCompanionBuilder = CustomTagsCompanion Function({
+  required String key,
+  required String label,
+  Value<int> rowid,
+});
+typedef $$CustomTagsTableUpdateCompanionBuilder = CustomTagsCompanion Function({
+  Value<String> key,
+  Value<String> label,
+  Value<int> rowid,
+});
+
+class $$CustomTagsTableFilterComposer
+    extends Composer<_$AppDatabase, $CustomTagsTable> {
+  $$CustomTagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CustomTagsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CustomTagsTable> {
+  $$CustomTagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CustomTagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CustomTagsTable> {
+  $$CustomTagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+}
+
+class $$CustomTagsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CustomTagsTable,
+          CustomTag,
+          $$CustomTagsTableFilterComposer,
+          $$CustomTagsTableOrderingComposer,
+          $$CustomTagsTableAnnotationComposer,
+          $$CustomTagsTableCreateCompanionBuilder,
+          $$CustomTagsTableUpdateCompanionBuilder,
+          (
+            CustomTag,
+            BaseReferences<_$AppDatabase, $CustomTagsTable, CustomTag>,
+          ),
+          CustomTag,
+          PrefetchHooks Function()
+        > {
+  $$CustomTagsTableTableManager(_$AppDatabase db, $CustomTagsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CustomTagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CustomTagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CustomTagsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> key = const Value.absent(),
+            Value<String> label = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) => CustomTagsCompanion(key: key, label: label, rowid: rowid),
+          createCompanionCallback:
+              ({
+                required String key,
+                required String label,
+                Value<int> rowid = const Value.absent(),
+              }) => CustomTagsCompanion.insert(
+                key: key,
+                label: label,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CustomTagsTable, CustomTag>(table),
+                  BaseReferences<_$AppDatabase, $CustomTagsTable, CustomTag>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CustomTagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CustomTagsTable,
+      CustomTag,
+      $$CustomTagsTableFilterComposer,
+      $$CustomTagsTableOrderingComposer,
+      $$CustomTagsTableAnnotationComposer,
+      $$CustomTagsTableCreateCompanionBuilder,
+      $$CustomTagsTableUpdateCompanionBuilder,
+      (CustomTag, BaseReferences<_$AppDatabase, $CustomTagsTable, CustomTag>),
+      CustomTag,
+      PrefetchHooks Function()
+    >;
 typedef $$SettingsTableCreateCompanionBuilder = SettingsCompanion Function({
   required String key,
   required String value,
@@ -2332,6 +2971,8 @@ class $AppDatabaseManager {
       $$SymptomEntriesTableTableManager(_db, _db.symptomEntries);
   $$SexEntriesTableTableManager get sexEntries =>
       $$SexEntriesTableTableManager(_db, _db.sexEntries);
+  $$CustomTagsTableTableManager get customTags =>
+      $$CustomTagsTableTableManager(_db, _db.customTags);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
 }

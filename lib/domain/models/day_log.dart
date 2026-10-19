@@ -9,6 +9,8 @@ enum FlowLevel {
   bool get isBleeding => index >= FlowLevel.light.index;
 }
 
+enum EnergyLevel { low, normal, high }
+
 enum Mucus { dry, sticky, creamy, watery, eggWhite }
 
 enum TestResult { negative, positive, peak }

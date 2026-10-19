@@ -10,6 +10,7 @@ import 'generated/schema.dart';
 import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
+import 'generated/schema_v4.dart' as v4;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -155,6 +156,38 @@ void main() {
             protection: 'condom',
           ),
         ]);
+      },
+    );
+  });
+
+  test('v3 to v4 keeps day logs and leaves new fields empty', () async {
+    const jan1 = '2026-01-01T00:00:00.000Z';
+    await verifier.testWithDataIntegrity(
+      oldVersion: 3,
+      newVersion: 4,
+      createOld: v3.DatabaseAtV3.new,
+      createNew: v4.DatabaseAtV4.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) {
+        batch.insertAll(oldDb.dayLogs, [
+          const v3.DayLogsData(
+            date: jan1,
+            flow: 'medium',
+            bbtDisturbed: 0,
+            bbt: 36.4,
+          ),
+        ]);
+      },
+      validateItems: (newDb) async {
+        expect(await newDb.select(newDb.dayLogs).get(), [
+          const v4.DayLogsData(
+            date: jan1,
+            flow: 'medium',
+            bbtDisturbed: 0,
+            bbt: 36.4,
+          ),
+        ]);
+        expect(await newDb.select(newDb.customTags).get(), isEmpty);
       },
     );
   });

@@ -14,8 +14,26 @@ class DayLogs extends Table {
   TextColumn get pregnancyTest => textEnum<TestResult>().nullable()();
   TextColumn get note => text().nullable()();
 
+  /// Pads, tampons, etc. used that day.
+  IntColumn get products => integer().nullable()();
+  TextColumn get energy => textEnum<EnergyLevel>().nullable()();
+  RealColumn get sleepHours => real().nullable()();
+
+  /// Always stored in kilograms; converted for display.
+  RealColumn get weightKg => real().nullable()();
+
   @override
   Set<Column> get primaryKey => {date};
+}
+
+/// Tags the user created. Logging one on a day stores a [SymptomEntries]
+/// row whose symptom is the tag's [key] (always `custom.<something>`).
+class CustomTags extends Table {
+  TextColumn get key => text()();
+  TextColumn get label => text()();
+
+  @override
+  Set<Column> get primaryKey => {key};
 }
 
 /// One row per sexual encounter or masturbation session, so several can be

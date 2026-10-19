@@ -116,6 +116,25 @@ void main() {
       expect(all, hasLength(2));
     });
 
+    test(
+      'custom tags get unique keys and deleting removes their logs',
+      () async {
+        final a = await db.addCustomTag('Ran 5k!');
+        final again = await db.addCustomTag('ran 5K!');
+        final b = await db.addCustomTag('Ran 5k?');
+        expect(a, 'custom.ran_5k');
+        expect(again, a);
+        expect(b, 'custom.ran_5k_2');
+
+        await db.setSymptom(d(2026, 1, 1), a, 1);
+        await db.deleteCustomTag(a);
+        expect(await db.watchSymptoms(d(2026, 1, 1)).first, isEmpty);
+        expect((await db.watchCustomTags().first).map((t) => t.label), [
+          'Ran 5k?',
+        ]);
+      },
+    );
+
     test('wipe removes everything', () async {
       await db.setFlow(d(2026, 1, 1), FlowLevel.heavy);
       await db.setSetting('a', 'b');

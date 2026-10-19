@@ -7,12 +7,14 @@ import 'tables.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [DayLogs, SymptomEntries, SexEntries, Settings])
+@DriftDatabase(
+  tables: [DayLogs, SymptomEntries, SexEntries, CustomTags, Settings],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -31,6 +33,13 @@ class AppDatabase extends _$AppDatabase {
       from2To3: (m, schema) async {
         // Existing entries default to partnered.
         await m.addColumn(schema.sexEntries, schema.sexEntries.kind);
+      },
+      from3To4: (m, schema) async {
+        await m.addColumn(schema.dayLogs, schema.dayLogs.products);
+        await m.addColumn(schema.dayLogs, schema.dayLogs.energy);
+        await m.addColumn(schema.dayLogs, schema.dayLogs.sleepHours);
+        await m.addColumn(schema.dayLogs, schema.dayLogs.weightKg);
+        await m.createTable(schema.customTags);
       },
     ),
   );
@@ -107,6 +116,43 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> deleteSexEntry(int id) =>
       (delete(sexEntries)..where((t) => t.id.equals(id))).go();
+
+  Stream<List<CustomTag>> watchCustomTags() =>
+      (select(customTags)..orderBy([(t) => OrderingTerm.asc(t.label)])).watch();
+
+  /// Creates a tag and returns its key. Reuses an existing tag with the same
+  /// label (ignoring case).
+  Future<String> addCustomTag(String label) async {
+    final existing =
+        await (select(customTags)
+              ..where((t) => t.label.lower().equals(label.toLowerCase())))
+            .getSingleOrNull();
+    if (existing != null) return existing.key;
+    final slug = label
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'^_+|_+$'), '');
+    var key = 'custom.${slug.isEmpty ? 'tag' : slug}';
+    for (
+      var n = 2;
+      await (select(
+            customTags,
+          )..where((t) => t.key.equals(key))).getSingleOrNull() !=
+          null;
+      n++
+    ) {
+      key = 'custom.${slug}_$n';
+    }
+    await into(customTags)
+        .insert(CustomTagsCompanion.insert(key: key, label: label.trim()));
+    return key;
+  }
+
+  /// Deletes a tag and every day it was logged on.
+  Future<void> deleteCustomTag(String key) => transaction(() async {
+    await (delete(symptomEntries)..where((t) => t.symptom.equals(key))).go();
+    await (delete(customTags)..where((t) => t.key.equals(key))).go();
+  });
 
   Stream<String?> watchSetting(String key) =>
       (select(settings)..where((t) => t.key.equals(key)))

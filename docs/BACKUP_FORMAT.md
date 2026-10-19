@@ -7,7 +7,7 @@ Comma backups (`.comma` files) are UTF-8 JSON. This document lets anyone recover
 ```json
 {
   "format": "comma-backup",
-  "version": 3,
+  "version": 4,
   "exportedAt": "2026-10-19T14:03:00.000Z",
   "dayLogs": [
     {
@@ -18,7 +18,11 @@ Comma backups (`.comma` files) are UTF-8 JSON. This document lets anyone recover
       "bbtDisturbed": true,
       "lhTest": "positive",
       "pregnancyTest": "negative",
-      "note": "free text"
+      "note": "free text",
+      "products": 4,
+      "energy": "low",
+      "sleepHours": 7.5,
+      "weightKg": 61.2
     }
   ],
   "symptomEntries": [
@@ -27,6 +31,7 @@ Comma backups (`.comma` files) are UTF-8 JSON. This document lets anyone recover
   "sexEntries": [
     { "date": "2026-10-14", "kind": "partnered", "minuteOfDay": 1350, "protection": "condom", "orgasm": true, "note": "free text" }
   ],
+  "customTags": { "custom.migraine_meds": "Migraine meds" },
   "settings": { "default_cycle_length": "28" }
 }
 ```
@@ -40,7 +45,10 @@ Comma backups (`.comma` files) are UTF-8 JSON. This document lets anyone recover
   - `kind` is `partnered` or `solo` (masturbation). If it's missing, the entry is `partnered`.
   - `minuteOfDay` is minutes after midnight (1350 = 22:30).
   - `protection` is one of: `unprotected`, `condom`, `withdrawal`, `otherProtection`. It only applies to partnered entries.
-- `bbt` is in °C.
+- `bbt` is in °C, and `weightKg` is in kilograms. The app converts them for display.
+- `products` is how many pads, tampons and so on were used that day.
+- `energy` is one of: `low`, `normal`, `high`.
+- `customTags` maps tag keys to their labels. A tag logged on a day shows up in `symptomEntries`, with the tag key as its `symptom`.
 - `symptom` keys are listed in `lib/domain/models/symptoms.dart`. Moods start with `mood.`, and custom entries start with `custom.`.
 
 ## Encrypted backup
@@ -82,5 +90,6 @@ print(json.dumps(json.loads(plain), indent=2))
 | 1 | Initial format. Each day log had an optional `sex` value: `none`, `protected` or `unprotected`. |
 | 2 | Sex moved to `sexEntries`, allowing several per day. Comma still imports version 1 files. |
 | 3 | Added `kind` to sex entries (`partnered` or `solo`). Older versions of the app refuse these files, so solo entries are never imported as partnered. |
+| 4 | Added `products`, `energy`, `sleepHours` and `weightKg` to day logs, and `customTags`. |
 
 `version` goes up only when an older app couldn't read the new file correctly. The app refuses to import backups with a newer version than it understands, instead of losing data.

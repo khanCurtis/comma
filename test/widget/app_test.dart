@@ -2,6 +2,7 @@ import 'package:comma/app/app.dart';
 import 'package:comma/app/providers.dart';
 import 'package:comma/data/db/database.dart';
 import 'package:comma/domain/models/day_log.dart';
+import 'package:comma/features/log/day_log_sheet.dart';
 import 'package:drift/drift.dart' show DatabaseConnection;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -61,8 +62,15 @@ void main() {
     await tester.scrollUntilVisible(
       add,
       200,
-      scrollable: find.byType(Scrollable).last,
+      scrollable: find
+          .descendant(
+            of: find.byType(DayLogSheet),
+            matching: find.byType(Scrollable),
+          )
+          .first,
     );
+    await tester.ensureVisible(add);
+    await tester.pumpAndSettle();
     await tester.tap(add);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Unprotected'));
@@ -114,6 +122,7 @@ void main() {
       await tester.tap(find.text(tab));
       await tester.pumpAndSettle();
     }
+    await tester.scrollUntilVisible(find.text('Delete all data'), 200);
     expect(find.text('Delete all data'), findsOneWidget);
     expect(find.text('Never backed up'), findsOneWidget);
 
