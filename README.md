@@ -60,6 +60,8 @@ Cycle data is some of the most sensitive health data a person can have. Many pop
 ## Installation
 
 ### Android
+Requires Android 7.0 or newer.
+
 - **F-Droid**: *(coming soon)*
 - **GitHub Releases**: download the latest signed APK from the [Releases](../../releases) page
 - **Obtainium**: add this repository's URL to get automatic updates from GitHub Releases
