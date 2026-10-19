@@ -7,6 +7,7 @@ class ReminderSettings {
     this.periodMinute = 9 * 60,
     this.dailyLogMinute,
     this.discreet = true,
+    this.fertileWindow = false,
   });
 
   /// Days before the predicted period to remind, or null for off.
@@ -18,6 +19,9 @@ class ReminderSettings {
 
   /// Use neutral wording so notifications reveal nothing on a lock screen.
   final bool discreet;
+
+  /// Remind when the estimated fertile window starts (trying to conceive).
+  final bool fertileWindow;
 }
 
 class MedReminder {
@@ -53,12 +57,14 @@ class PlannedNotification {
 /// Notifications for the next [days] days after [now], soonest first and
 /// capped at [limit] (iOS keeps at most 64 pending).
 ///
-/// Ids are stable: 1 for the period reminder, 1000+ for daily log
+/// Ids are stable: 1 for the period reminder, 2 for the fertile window,
+/// 1000+ for daily log
 /// reminders, and 100000 + medication id × 100 + day for doses.
 List<PlannedNotification> planReminders({
   required DateTime now,
   required ReminderSettings settings,
   DateTime? nextPeriod,
+  DateTime? fertileStart,
   List<MedReminder> meds = const [],
   int days = 14,
   int limit = 60,
@@ -86,6 +92,22 @@ List<PlannedNotification> planReminders({
               ? 'Your period is expected today.'
               : 'Your period is expected in $before '
                     '${before == 1 ? 'day' : 'days'}.',
+        ),
+      );
+    }
+  }
+
+  if (settings.fertileWindow && fertileStart != null) {
+    final when = at(fertileStart, settings.periodMinute);
+    if (when.isAfter(now)) {
+      planned.add(
+        PlannedNotification(
+          2,
+          when,
+          discreet ? neutralTitle : 'Fertile window',
+          discreet
+              ? neutralBody
+              : 'Your estimated fertile window starts today.',
         ),
       );
     }

@@ -120,34 +120,35 @@ Every rule has unit tests built on synthetic fixture data, never real user data.
 ## 6. Roadmap
 
 ### Phase 1: MVP (core tracking)
-- [ ] Flutter project scaffold, CI, license, CONTRIBUTING, code of conduct
-- [ ] Encrypted drift DB + key management
-- [ ] Onboarding (typical cycle and period length, last period date)
-- [ ] Calendar view + daily log sheet (flow, symptoms, mood, notes)
-- [ ] Today screen: cycle day, phase, next period countdown
-- [ ] Prediction engine v1 (cycle length, period length, ovulation estimate, fertile window), fully tested
-- [ ] Period reminders
+- [x] Flutter project scaffold, CI, license, CONTRIBUTING
+- [ ] Code of conduct
+- [x] Encrypted drift DB + key management
+- [x] Onboarding (typical cycle and period length, last period date)
+- [x] Calendar view + daily log sheet (flow, symptoms, mood, notes)
+- [x] Today screen: cycle day, phase, next period countdown
+- [x] Prediction engine v1 (cycle length, period length, ovulation estimate, fertile window), fully tested
+- [x] Period reminders
 
 ### Phase 2: Fertility signals and export
-- [ ] BBT, mucus, LH and pregnancy tests
-- [ ] BBT chart + ovulation confirmation
-- [ ] PDF doctor report
+- [x] BBT, mucus, LH and pregnancy tests
+- [x] BBT chart + ovulation confirmation
+- [x] PDF doctor report
 - [x] Encrypted backup and restore (JSON, optionally password-encrypted)
-- [ ] CSV export
-- [ ] App lock (PIN + biometrics)
+- [x] CSV export
+- [x] App lock (PIN + biometrics)
 
 ### Phase 3: Insights and modes
-- [ ] Insights screen (charts, stats, symptom patterns)
-- [ ] Irregularity flags
-- [ ] Medications and pill reminders
-- [ ] Pregnancy, postpartum, perimenopause and trying-to-conceive modes
-- [ ] Custom symptoms and tags
+- [x] Insights screen (charts, stats, symptom patterns)
+- [x] Irregularity flags
+- [x] Medications and pill reminders
+- [x] Pregnancy, postpartum, perimenopause and trying-to-conceive modes
+- [x] Custom symptoms and tags
 - [ ] CSV import
 
 ### Phase 4: Polish and reach
 - [ ] Accessibility audit (screen readers, contrast, text scaling)
 - [ ] Translations through Weblate
-- [ ] Discreet icon option, panic wipe
+- [x] Discreet icon option, panic wipe
 - [ ] Home screen widget
 - [ ] Optional: user-controlled encrypted sync (WebDAV / Syncthing folder), still with no first-party server
 
@@ -165,12 +166,13 @@ Every rule has unit tests built on synthetic fixture data, never real user data.
 - Optional later step: publish an AltStore "source" JSON file in the repo, so updates show up inside AltStore.
 
 ## 8. Privacy and compliance checklist
-- [ ] No `INTERNET` permission on Android. Document this in the README as a verifiable claim.
-- [ ] Privacy statement in the README stating that no data is collected
-- [ ] Encrypted DB; exclude it from cloud backups (`android:allowBackup="false"`, iOS `NSURLIsExcludedFromBackupKey`) unless the user opts in
-- [ ] Neutral notification wording by default ("Reminder" rather than "Your period is coming")
-- [ ] Medical disclaimer during onboarding and in the PDF report
-- [ ] Never use real health data in tests, issues or screenshots
+- [x] No `INTERNET` permission on Android. Document this in the README as a verifiable claim.
+- [x] Privacy statement in the README stating that no data is collected
+- [x] Encrypted DB; excluded from Android cloud backups
+- [ ] iOS: set `NSURLIsExcludedFromBackupKey` on the database file so it stays out of iCloud backups
+- [x] Neutral notification wording by default ("Reminder" rather than "Your period is coming")
+- [x] Medical disclaimer during onboarding and in the PDF report
+- [x] Never use real health data in tests, issues or screenshots
 
 ## 9. Open decisions
 1. ~~License~~: GPL-3.0 (no app-store distribution, so there is no conflict)

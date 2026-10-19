@@ -8,10 +8,12 @@ import '../../domain/engine/predictor.dart';
 import '../../domain/engine/status.dart';
 import '../../domain/models/day_log.dart';
 import '../../domain/dates.dart';
+import '../../domain/modes.dart';
 import '../learn/articles.dart';
 import '../learn/learn_screen.dart';
 import '../log/day_log_sheet.dart';
 import '../sex/sex_entry_sheet.dart';
+import 'mode_today.dart';
 import 'tips.dart';
 
 class TodayScreen extends ConsumerWidget {
@@ -21,6 +23,14 @@ class TodayScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final today = ref.watch(todayProvider);
     final cycles = ref.watch(cyclesProvider).value ?? const [];
+    final mode = ref.watch(modeProvider);
+    if (mode == TrackingMode.pregnant) return const PregnancyToday();
+    final birth = ref.watch(birthDateProvider);
+    if (mode == TrackingMode.postpartum &&
+        birth != null &&
+        !cycles.any((c) => c.start.isAfter(birth))) {
+      return PostpartumToday(birth: birth);
+    }
     final predictions = ref.watch(predictionsProvider);
     final status = cycleStatus(cycles, predictions, today);
     final next = predictions.isEmpty ? null : predictions.first;
@@ -33,7 +43,7 @@ class TodayScreen extends ConsumerWidget {
     final recentUnprotected = recentSex.any(
       (e) => e.protection == SexProtection.unprotected,
     );
-    final tip = tipFor(status);
+    final tip = tipFor(status, mode: mode);
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -72,7 +82,7 @@ class TodayScreen extends ConsumerWidget {
                         ]
                       : [
                           Text(
-                            _phaseLabel(status.phase),
+                            _phaseLabel(status.phase, mode),
                             style: text.titleMedium?.copyWith(
                               color: status.phase == Phase.period
                                   ? colors.onPeriod
@@ -188,7 +198,9 @@ class TodayScreen extends ConsumerWidget {
     );
   }
 
-  static String _phaseLabel(Phase phase) => switch (phase) {
+  static String _phaseLabel(Phase phase, TrackingMode mode) => switch (phase) {
+    Phase.fertile when mode == TrackingMode.ttc => 'Good days to try',
+    Phase.ovulation when mode == TrackingMode.ttc => 'Best day to try',
     Phase.period => 'Period',
     Phase.follicular => 'Follicular phase',
     Phase.fertile => 'Fertile window',

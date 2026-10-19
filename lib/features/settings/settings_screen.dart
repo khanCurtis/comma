@@ -6,6 +6,7 @@ import '../../app/providers.dart';
 import '../../domain/units.dart';
 import '../lock/lock_settings_screen.dart';
 import '../medications/medications_screen.dart';
+import '../modes/mode_screen.dart';
 import '../reminders/reminders_screen.dart';
 import '../reports/reports_screen.dart';
 import 'app_icon.dart';
@@ -60,6 +61,14 @@ class SettingsScreen extends ConsumerWidget {
             style: Theme.of(context).textTheme.headlineSmall,
           ),
         ),
+        ListTile(
+          leading: const Icon(Icons.tune),
+          title: const Text('Mode'),
+          subtitle: Text(ref.watch(modeProvider).label),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => openModes(context),
+        ),
+        const Divider(),
         ListTile(
           title: const Text('Default cycle length'),
           subtitle: const Text('Used until you have logged a few cycles'),

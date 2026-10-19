@@ -5,7 +5,8 @@ library;
 enum ArticleCategory {
   periods('Periods'),
   sexualHealth('Sex & relationships'),
-  fertility('Fertility & pregnancy');
+  fertility('Fertility & pregnancy'),
+  lifeStages('After birth & menopause');
 
   const ArticleCategory(this.label);
   final String label;
@@ -65,6 +66,10 @@ abstract final class ArticleIds {
   static const stiTesting = 'sti-testing';
   static const fertileWindow = 'fertile-window';
   static const pregnancyTests = 'pregnancy-tests';
+  static const pregnancyWarningSigns = 'pregnancy-warning-signs';
+  static const pregnancyLoss = 'pregnancy-loss';
+  static const afterBirth = 'after-birth';
+  static const perimenopause = 'perimenopause';
 }
 
 Article? articleById(String id) {
@@ -532,6 +537,151 @@ const articles = <Article>[
       ),
     ],
     sources: ['NHS: Doing a pregnancy test', 'NHS: Ectopic pregnancy'],
+  ),
+  Article(
+    id: ArticleIds.pregnancyWarningSigns,
+    title: 'Pregnancy warning signs',
+    summary: 'Symptoms that need a call to your midwife or doctor now.',
+    category: ArticleCategory.fertility,
+    blocks: [
+      Para(
+        'Most aches and changes in pregnancy are normal, but some need '
+        'to be checked the same day. Trust your instincts: if something '
+        'feels wrong, call.',
+      ),
+      Callout(
+        'Contact your midwife, doctor or maternity unit straight away, or '
+        'call emergency services, if you have:',
+        urgent: true,
+      ),
+      Bullets([
+        'Bleeding from the vagina.',
+        'Severe or constant pain in your belly.',
+        'A bad headache that won\'t go away, problems with your vision, or '
+            'sudden swelling of your face, hands or feet. These can be signs '
+            'of pre-eclampsia.',
+        'A high temperature, or feeling very unwell.',
+        'Your baby moving less than usual, or not at all, from about 24 '
+            'weeks. Don\'t wait until the next day.',
+        'Fluid leaking from your vagina before 37 weeks.',
+        'Intense itching, especially on your hands and feet.',
+        'Thoughts of harming yourself or your baby.',
+      ]),
+    ],
+    sources: [
+      'NHS: Pregnancy, when to get help',
+      'NHS: Pre-eclampsia',
+      'NHS: Your baby\'s movements',
+    ],
+  ),
+  Article(
+    id: ArticleIds.pregnancyLoss,
+    title: 'Pregnancy loss',
+    summary: 'Support after a miscarriage or other loss.',
+    category: ArticleCategory.fertility,
+    blocks: [
+      Para(
+        'Losing a pregnancy is common, but that doesn\'t make it any '
+        'easier. Whatever you\'re feeling is valid, and it is not your '
+        'fault. Most losses happen because of things nobody could have '
+        'prevented.',
+      ),
+      Heading('Looking after your body'),
+      Bullets([
+        'Bleeding and cramps can continue for a couple of weeks.',
+        'Your period usually returns within 4 to 8 weeks.',
+        'You can get pregnant again before your next period, so use '
+            'contraception if you don\'t want to.',
+      ]),
+      Callout(
+        'Get urgent care for very heavy bleeding (soaking a pad every '
+        'hour), severe pain, a high temperature, or smelly discharge.',
+        urgent: true,
+      ),
+      Heading('Looking after yourself'),
+      Para(
+        'Grief can come in waves, for you and for a partner. Talking to '
+        'someone you trust, your doctor, or a pregnancy loss charity can '
+        'help. Comma has left this cycle out of your averages, so it '
+        'won\'t affect your predictions.',
+      ),
+    ],
+    sources: ['NHS: Miscarriage', 'ACOG: Early Pregnancy Loss (FAQ090)'],
+  ),
+  Article(
+    id: ArticleIds.afterBirth,
+    title: 'Your body after giving birth',
+    summary: 'Bleeding, when periods return, and getting help.',
+    category: ArticleCategory.lifeStages,
+    blocks: [
+      Para(
+        'Bleeding after birth (lochia) is normal and can last up to six '
+        'weeks. Comma doesn\'t count it as a period.',
+      ),
+      Heading('When will my period come back?'),
+      Bullets([
+        'If you\'re not breastfeeding, often within 5 to 6 weeks, but it '
+            'varies.',
+        'If you\'re breastfeeding, it can take months, sometimes until you '
+            'stop or breastfeed less.',
+        'Your first few cycles may be irregular. Predictions will improve '
+            'once you\'ve logged a few.',
+      ]),
+      Callout(
+        'You can get pregnant before your first period returns, as early '
+        'as 3 weeks after birth. Talk to your midwife or doctor about '
+        'contraception.',
+      ),
+      Heading('Get help'),
+      Bullets([
+        'Get urgent care for sudden heavy bleeding or large clots, a high '
+            'temperature, severe headache, or pain or swelling in one leg.',
+        'Feeling low, anxious or unable to cope for more than two weeks '
+            'can be postnatal depression. It\'s common and treatable: talk '
+            'to your doctor or health visitor.',
+      ]),
+    ],
+    sources: [
+      'NHS: Your post-pregnancy body',
+      'NHS: Contraception after having a baby',
+      'NHS: Postnatal depression',
+    ],
+  ),
+  Article(
+    id: ArticleIds.perimenopause,
+    title: 'Perimenopause',
+    summary: 'The years leading up to menopause, and what to expect.',
+    category: ArticleCategory.lifeStages,
+    blocks: [
+      Para(
+        'Perimenopause is the time when hormone levels start to change '
+        'before periods stop for good. It usually begins in your 40s and '
+        'can last several years.',
+      ),
+      Heading('Common changes'),
+      Bullets([
+        'Periods becoming irregular: closer together, further apart, '
+            'heavier or lighter.',
+        'Hot flushes and night sweats.',
+        'Trouble sleeping, low mood, anxiety or brain fog.',
+        'Vaginal dryness and lower sex drive.',
+      ]),
+      Para(
+        'Menopause is reached 12 months after your last period. Until '
+        'then, you can still get pregnant, so keep using contraception if '
+        'you don\'t want to.',
+      ),
+      Para(
+        'A doctor can talk to you about treatments such as hormone '
+        'replacement therapy (HRT) if symptoms affect your life.',
+      ),
+      Callout(
+        'See a doctor about any bleeding after menopause, very heavy '
+        'periods, or bleeding between periods or after sex.',
+        urgent: true,
+      ),
+    ],
+    sources: ['NHS: Menopause', 'ACOG: The Menopause Years (FAQ047)'],
   ),
 ];
 

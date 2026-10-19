@@ -57,3 +57,9 @@ These thresholds come from the FIGO System 1 definitions of normal uterine bleed
 | Missed periods | 90+ days since the last period (not shown in pregnancy mode) |
 
 A flag doesn't mean something is wrong. It's information worth bringing to a healthcare provider, and it's included in the doctor report.
+
+## Modes (`lib/domain/modes.dart`)
+- **Pregnant:** period predictions, period reminders and the "missed periods" flag are switched off. Weeks are counted from the first day of the last period. The due date uses Naegele's rule (last period + 280 days), shifted by how much your usual cycle differs from 28 days.
+- **After giving birth:** bleeding in the 6 weeks after the birth date (lochia) is not counted as a period. Predictions and flags only use cycles that start after the birth.
+- **Ending a pregnancy:** the cycle the pregnancy started in is left out of averages, so a 9-month "cycle" doesn't distort predictions.
+- **Trying to conceive** and **perimenopause** use the same calculations, with wording and tips suited to each.

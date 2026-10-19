@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../app/providers.dart';
 import '../../domain/dates.dart';
 import '../../domain/models/day_log.dart';
+import '../../domain/modes.dart';
 import '../settings/backup_flow.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -19,6 +20,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   var _cycleLength = 28;
   var _periodLength = 5;
   var _acknowledged = false;
+  var _mode = TrackingMode.standard;
+  DateTime? _birth;
 
   Future<void> _finish() async {
     final db = ref.read(databaseProvider);
@@ -26,6 +29,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       for (var i = 0; i < _periodLength; i++) {
         await db.setFlow(addDays(_lastPeriod!, i), FlowLevel.medium);
       }
+    }
+    await db.setSetting(SettingKeys.mode, _mode.name);
+    String iso(DateTime d) => d.toIso8601String().substring(0, 10);
+    if (_mode == TrackingMode.pregnant && _lastPeriod != null) {
+      await db.setSetting(SettingKeys.pregnancyLastPeriod, iso(_lastPeriod!));
+    }
+    if (_mode == TrackingMode.postpartum && _birth != null) {
+      await db.setSetting(SettingKeys.birthDate, iso(_birth!));
     }
     await db.setSetting(SettingKeys.cycleLength, '$_cycleLength');
     await db.setSetting(SettingKeys.periodLength, '$_periodLength');
@@ -47,7 +58,48 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               'and nothing is sent anywhere.',
             ),
             const SizedBox(height: 32),
-            Text('When did your last period start?', style: text.titleMedium),
+            Text('What are you using Comma for?', style: text.titleMedium),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                for (final m in TrackingMode.values)
+                  ChoiceChip(
+                    label: Text(m.label),
+                    selected: _mode == m,
+                    onSelected: (_) => setState(() => _mode = m),
+                  ),
+              ],
+            ),
+            if (_mode == TrackingMode.postpartum) ...[
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.child_friendly_outlined),
+                label: Text(
+                  _birth == null
+                      ? 'When did you give birth?'
+                      : 'Gave birth ${DateFormat.yMMMd().format(_birth!)}',
+                ),
+                onPressed: () async {
+                  final now = DateTime.now();
+                  final picked = await showDatePicker(
+                    context: context,
+                    firstDate: now.subtract(const Duration(days: 730)),
+                    lastDate: now,
+                    initialDate: _birth ?? now,
+                  );
+                  if (picked != null) setState(() => _birth = dateOnly(picked));
+                },
+              ),
+            ],
+            const SizedBox(height: 24),
+            Text(
+              _mode == TrackingMode.postpartum
+                  ? 'When did your last period start? (optional)'
+                  : 'When did your last period start?',
+              style: text.titleMedium,
+            ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
               icon: const Icon(Icons.event),

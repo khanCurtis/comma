@@ -22,6 +22,8 @@ const physicalSymptoms = [
   SymptomDef('unusual_discharge', 'Unusual discharge'),
   SymptomDef('pelvic_pain', 'Pelvic pain'),
   SymptomDef('dizziness', 'Dizziness'),
+  SymptomDef('hot_flashes', 'Hot flushes'),
+  SymptomDef('night_sweats', 'Night sweats'),
 ];
 
 const moods = [

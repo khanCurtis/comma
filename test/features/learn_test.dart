@@ -23,6 +23,10 @@ void main() {
         ArticleIds.stiTesting,
         ArticleIds.fertileWindow,
         ArticleIds.pregnancyTests,
+        ArticleIds.pregnancyWarningSigns,
+        ArticleIds.pregnancyLoss,
+        ArticleIds.afterBirth,
+        ArticleIds.perimenopause,
       ]) {
         expect(articleById(id), isNotNull, reason: id);
       }

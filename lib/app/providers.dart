@@ -12,6 +12,7 @@ import '../domain/engine/patterns.dart';
 import '../domain/engine/predictor.dart';
 import '../domain/models/cycle.dart';
 import '../domain/medication_schedule.dart';
+import '../domain/modes.dart';
 import '../domain/reminders.dart';
 import '../domain/units.dart';
 import '../features/reminders/notification_service.dart';
@@ -34,6 +35,14 @@ abstract final class SettingKeys {
   static const periodReminderMinute = 'reminder_period_minute';
   static const dailyLogReminderMinute = 'reminder_daily_minute';
   static const discreetNotifications = 'reminders_discreet';
+  static const fertileReminder = 'reminder_fertile';
+  static const mode = 'mode';
+  static const pregnancyLastPeriod = 'pregnancy_lmp';
+  static const birthDate = 'birth_date';
+  static const breastfeeding = 'breastfeeding';
+
+  /// Comma-separated cycle start dates left out of averages (YYYY-MM-DD).
+  static const excludedCycles = 'excluded_cycles';
 }
 
 final settingProvider = StreamProvider.family<String?, String>(
@@ -42,17 +51,68 @@ final settingProvider = StreamProvider.family<String?, String>(
 
 final todayProvider = Provider<DateTime>((ref) => dateOnly(DateTime.now()));
 
-final cyclesProvider = StreamProvider<List<Cycle>>(
-  (ref) => ref
-      .watch(databaseProvider)
-      .watchBleedingDays()
-      .map((days) => buildCycles(days)),
+final modeProvider = Provider<TrackingMode>(
+  (ref) =>
+      TrackingMode.values.asNameMap()[ref
+          .watch(settingProvider(SettingKeys.mode))
+          .value] ??
+      TrackingMode.standard,
 );
 
-final statsProvider = Provider<CycleStats?>((ref) {
-  final cycles = ref.watch(cyclesProvider).value ?? const [];
-  return computeStats(cycles);
+DateTime? _dateSetting(Ref ref, String key) {
+  final d = DateTime.tryParse(ref.watch(settingProvider(key)).value ?? '');
+  return d == null ? null : dateOnly(d);
+}
+
+final pregnancyLastPeriodProvider = Provider(
+  (ref) => _dateSetting(ref, SettingKeys.pregnancyLastPeriod),
+);
+
+final birthDateProvider = Provider(
+  (ref) => _dateSetting(ref, SettingKeys.birthDate),
+);
+
+final excludedCyclesProvider = Provider<Set<DateTime>>(
+  (ref) => {
+    for (final s
+        in (ref.watch(settingProvider(SettingKeys.excludedCycles)).value ?? '')
+            .split(','))
+      if (DateTime.tryParse(s) case final d?) dateOnly(d),
+  },
+);
+
+final cyclesProvider = StreamProvider<List<Cycle>>((ref) {
+  final birth = ref.watch(modeProvider) == TrackingMode.postpartum
+      ? ref.watch(birthDateProvider)
+      : null;
+  return ref
+      .watch(databaseProvider)
+      .watchBleedingDays()
+      .map(
+        (days) => buildCycles(
+          birth == null ? days : withoutPostpartumBleeding(days, birth),
+        ),
+      );
 });
+
+/// Cycles that predictions and flags learn from. After giving birth only
+/// cycles since the birth count, since earlier ones no longer reflect
+/// your body.
+final _predictiveCyclesProvider = Provider<List<Cycle>>((ref) {
+  final cycles = ref.watch(cyclesProvider).value ?? const [];
+  final birth = ref.watch(birthDateProvider);
+  if (ref.watch(modeProvider) == TrackingMode.postpartum && birth != null) {
+    return cycles.where((c) => c.start.isAfter(birth)).toList();
+  }
+  return cycles;
+});
+
+final statsProvider = Provider<CycleStats?>(
+  (ref) => computeStats(
+    ref.watch(cyclesProvider).value ?? const [],
+    excludedStarts: ref.watch(excludedCyclesProvider),
+  ),
+);
 
 final fertilitySignalsProvider = StreamProvider<List<FertilitySignal>>(
   (ref) => ref
@@ -106,7 +166,8 @@ final _allSymptomEntriesProvider = StreamProvider(
 );
 
 final predictionsProvider = Provider<List<CyclePrediction>>((ref) {
-  final cycles = ref.watch(cyclesProvider).value ?? const [];
+  if (ref.watch(modeProvider) == TrackingMode.pregnant) return const [];
+  final cycles = ref.watch(_predictiveCyclesProvider);
   int? setting(String key) =>
       int.tryParse(ref.watch(settingProvider(key)).value ?? '');
   return predictUpcoming(
@@ -115,6 +176,7 @@ final predictionsProvider = Provider<List<CyclePrediction>>((ref) {
     defaultCycleLength: setting(SettingKeys.cycleLength) ?? 28,
     defaultPeriodLength: setting(SettingKeys.periodLength) ?? 5,
     lutealLength: ref.watch(lutealLengthProvider),
+    excludedStarts: ref.watch(excludedCyclesProvider),
     currentOvulation: cycles.isEmpty
         ? null
         : ref.watch(ovulationsProvider)[cycles.last.start]?.date,
@@ -122,8 +184,16 @@ final predictionsProvider = Provider<List<CyclePrediction>>((ref) {
 });
 
 final irregularitiesProvider = Provider<List<Irregularity>>((ref) {
-  final cycles = ref.watch(cyclesProvider).value ?? const [];
-  return findIrregularities(cycles, today: ref.watch(todayProvider));
+  final excluded = ref.watch(excludedCyclesProvider);
+  final cycles = ref
+      .watch(_predictiveCyclesProvider)
+      .where((c) => !excluded.contains(c.start))
+      .toList();
+  return findIrregularities(
+    cycles,
+    today: ref.watch(todayProvider),
+    pregnant: ref.watch(modeProvider) == TrackingMode.pregnant,
+  );
 });
 
 bool get _usesImperial =>
@@ -159,6 +229,8 @@ final reminderSettingsProvider = Provider<ReminderSettings>((ref) {
     discreet:
         ref.watch(settingProvider(SettingKeys.discreetNotifications)).value !=
         'false',
+    fertileWindow:
+        ref.watch(settingProvider(SettingKeys.fertileReminder)).value == 'true',
   );
 });
 
@@ -173,6 +245,7 @@ final reminderPlanProvider = Provider<List<PlannedNotification>>((ref) {
     now: DateTime.now(),
     settings: ref.watch(reminderSettingsProvider),
     nextPeriod: predictions.isEmpty ? null : predictions.first.periodStart,
+    fertileStart: predictions.isEmpty ? null : predictions.first.fertileStart,
     meds: [
       for (final m in ref.watch(medicationsProvider).value ?? const [])
         if (m.reminderMinute != null)

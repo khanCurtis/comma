@@ -103,6 +103,17 @@ void main() {
       expect(plan.first.id, 100000 + 700 + 8);
     });
 
+    test('fertile window reminder', () {
+      final plan = planReminders(
+        now: now,
+        settings: const ReminderSettings(fertileWindow: true, discreet: false),
+        fertileStart: d(2026, 3, 5),
+      );
+      expect(plan.single.id, 2);
+      expect(plan.single.when, DateTime(2026, 3, 5, 9));
+      expect(plan.single.title, 'Fertile window');
+    });
+
     test('daily log reminders and the limit', () {
       final plan = planReminders(
         now: now,
