@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Check generated code is up to date
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          git diff --exit-code -- '*.g.dart'
+      - run: flutter analyze
+      - run: flutter test

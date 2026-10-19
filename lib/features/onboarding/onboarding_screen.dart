@@ -63,8 +63,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   lastDate: now,
                   initialDate: _lastPeriod ?? now,
                 );
-                if (picked != null)
+                if (picked != null) {
                   setState(() => _lastPeriod = dateOnly(picked));
+                }
               },
             ),
             const SizedBox(height: 24),
