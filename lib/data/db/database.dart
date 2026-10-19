@@ -31,17 +31,17 @@ class AppDatabase extends _$AppDatabase {
     return query.watch();
   }
 
-  Stream<DayLog?> watchDay(DateTime day) =>
-      (select(dayLogs)..where((t) => t.date.equals(dateOnly(day))))
-          .watchSingleOrNull();
+  Stream<DayLog?> watchDay(DateTime day) => (select(
+    dayLogs,
+  )..where((t) => t.date.equals(dateOnly(day)))).watchSingleOrNull();
 
   /// Inserts or updates the log for [entry]'s date. Only the columns present
   /// in [entry] are changed.
   Future<void> saveDay(DayLogsCompanion entry) =>
       into(dayLogs).insert(entry, onConflict: DoUpdate((_) => entry));
 
-  Future<void> setFlow(DateTime day, FlowLevel flow) => saveDay(
-      DayLogsCompanion(date: Value(dateOnly(day)), flow: Value(flow)));
+  Future<void> setFlow(DateTime day, FlowLevel flow) =>
+      saveDay(DayLogsCompanion(date: Value(dateOnly(day)), flow: Value(flow)));
 
   Stream<Map<String, int>> watchSymptoms(DateTime day) =>
       (select(symptomEntries)..where((t) => t.date.equals(dateOnly(day))))
@@ -52,12 +52,17 @@ class AppDatabase extends _$AppDatabase {
   Future<void> setSymptom(DateTime day, String symptom, int severity) async {
     final date = dateOnly(day);
     if (severity <= 0) {
-      await (delete(symptomEntries)
-            ..where((t) => t.date.equals(date) & t.symptom.equals(symptom)))
-          .go();
+      await (delete(
+        symptomEntries,
+      )..where((t) => t.date.equals(date) & t.symptom.equals(symptom))).go();
     } else {
-      await into(symptomEntries).insertOnConflictUpdate(SymptomEntriesCompanion
-          .insert(date: date, symptom: symptom, severity: Value(severity)));
+      await into(symptomEntries).insertOnConflictUpdate(
+        SymptomEntriesCompanion.insert(
+          date: date,
+          symptom: symptom,
+          severity: Value(severity),
+        ),
+      );
     }
   }
 
@@ -71,8 +76,8 @@ class AppDatabase extends _$AppDatabase {
 
   /// Permanently deletes every log and setting.
   Future<void> wipe() => transaction(() async {
-        for (final table in allTables) {
-          await delete(table).go();
-        }
-      });
+    for (final table in allTables) {
+      await delete(table).go();
+    }
+  });
 }

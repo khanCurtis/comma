@@ -12,8 +12,9 @@ void main() {
     });
 
     test('regular cycles give their exact length and zero spread', () {
-      final cycles =
-          buildCycles(periods(startsFrom(d(2026, 1, 1), [28, 28, 28, 28])));
+      final cycles = buildCycles(
+        periods(startsFrom(d(2026, 1, 1), [28, 28, 28, 28])),
+      );
       final stats = computeStats(cycles)!;
       expect(stats.cycleLength, closeTo(28, 1e-9));
       expect(stats.cycleLengthSd, 0);
@@ -22,8 +23,9 @@ void main() {
     });
 
     test('recent cycles weigh more than older ones', () {
-      final cycles =
-          buildCycles(periods(startsFrom(d(2026, 1, 1), [26, 26, 26, 32])));
+      final cycles = buildCycles(
+        periods(startsFrom(d(2026, 1, 1), [26, 26, 26, 32])),
+      );
       final stats = computeStats(cycles)!;
       expect(stats.cycleLength, greaterThan(27.5)); // plain mean is 27.5
     });
@@ -50,8 +52,9 @@ void main() {
     });
 
     test('predicts period, ovulation and fertile window', () {
-      final cycles =
-          buildCycles(periods(startsFrom(d(2026, 1, 1), [28, 28, 28])));
+      final cycles = buildCycles(
+        periods(startsFrom(d(2026, 1, 1), [28, 28, 28])),
+      );
       final p = predictUpcoming(cycles).single;
       expect(p.periodStart, d(2026, 4, 23)); // Mar 26 + 28
       expect(p.periodEnd, d(2026, 4, 27));
@@ -64,19 +67,24 @@ void main() {
     });
 
     test('irregular cycles lower confidence and widen the window', () {
-      final cycles =
-          buildCycles(periods(startsFrom(d(2026, 1, 1), [24, 34, 26, 33])));
+      final cycles = buildCycles(
+        periods(startsFrom(d(2026, 1, 1), [24, 34, 26, 33])),
+      );
       final p = predictUpcoming(cycles).single;
       expect(p.confidence, Confidence.medium);
       expect(p.latestStart.difference(p.earliestStart).inDays, greaterThan(4));
     });
 
     test('predicts several cycles ahead', () {
-      final cycles =
-          buildCycles(periods(startsFrom(d(2026, 1, 1), [28, 28, 28])));
+      final cycles = buildCycles(
+        periods(startsFrom(d(2026, 1, 1), [28, 28, 28])),
+      );
       final ps = predictUpcoming(cycles, count: 3);
-      expect(ps.map((p) => p.periodStart),
-          [d(2026, 4, 23), d(2026, 5, 21), d(2026, 6, 18)]);
+      expect(ps.map((p) => p.periodStart), [
+        d(2026, 4, 23),
+        d(2026, 5, 21),
+        d(2026, 6, 18),
+      ]);
       expect(ps.last.confidence, Confidence.low);
     });
   });

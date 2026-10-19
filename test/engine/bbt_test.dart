@@ -8,7 +8,11 @@ List<TempReading> series(List<double> temps, {Set<int> disturbed = const {}}) {
   final start = d(2026, 1, 1);
   return [
     for (var i = 0; i < temps.length; i++)
-      TempReading(addDays(start, i), temps[i], disturbed: disturbed.contains(i)),
+      TempReading(
+        addDays(start, i),
+        temps[i],
+        disturbed: disturbed.contains(i),
+      ),
   ];
 }
 

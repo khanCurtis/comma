@@ -27,7 +27,10 @@ void main() {
       final bytes = file.readAsBytesSync();
       final header = String.fromCharCodes(bytes.take(15));
       expect(header, isNot('SQLite format 3'));
-      expect(String.fromCharCodes(bytes), isNot(contains('very-private-value')));
+      expect(
+        String.fromCharCodes(bytes),
+        isNot(contains('very-private-value')),
+      );
     });
 
     test('reopens with the right key and refuses the wrong one', () async {
@@ -55,13 +58,20 @@ void main() {
       await db.setFlow(d(2026, 1, 2), FlowLevel.light);
       await db.setFlow(d(2026, 1, 3), FlowLevel.spotting);
       await db.setFlow(d(2026, 1, 4), FlowLevel.none);
-      expect(await db.watchBleedingDays().first, [d(2026, 1, 1), d(2026, 1, 2)]);
+      expect(await db.watchBleedingDays().first, [
+        d(2026, 1, 1),
+        d(2026, 1, 2),
+      ]);
     });
 
     test('saving a day only changes the given columns', () async {
       await db.setFlow(d(2026, 1, 1), FlowLevel.medium);
-      await db.saveDay(DayLogsCompanion(
-          date: Value(d(2026, 1, 1)), note: const Value('tired')));
+      await db.saveDay(
+        DayLogsCompanion(
+          date: Value(d(2026, 1, 1)),
+          note: const Value('tired'),
+        ),
+      );
       final day = await db.watchDay(d(2026, 1, 1)).first;
       expect(day!.flow, FlowLevel.medium);
       expect(day.note, 'tired');
@@ -76,8 +86,10 @@ void main() {
       await db.setSymptom(d(2026, 1, 1), 'cramps', 2);
       await db.setSymptom(d(2026, 1, 1), 'headache', 1);
       await db.setSymptom(d(2026, 1, 1), 'cramps', 3);
-      expect(await db.watchSymptoms(d(2026, 1, 1)).first,
-          {'cramps': 3, 'headache': 1});
+      expect(await db.watchSymptoms(d(2026, 1, 1)).first, {
+        'cramps': 3,
+        'headache': 1,
+      });
       await db.setSymptom(d(2026, 1, 1), 'headache', 0);
       expect(await db.watchSymptoms(d(2026, 1, 1)).first, {'cramps': 3});
     });

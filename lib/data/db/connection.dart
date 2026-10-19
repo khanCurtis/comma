@@ -13,19 +13,22 @@ const _keyName = 'comma.db_key';
 /// Opens the app database, encrypted with a random key kept in the Android
 /// Keystore / iOS Keychain. The key never leaves the device.
 QueryExecutor openAppDatabase() => LazyDatabase(() async {
-      final dir = await getApplicationSupportDirectory();
-      final file = File(p.join(dir.path, 'comma.db'));
-      return openEncryptedDatabase(file, await _loadOrCreateKey());
-    });
+  final dir = await getApplicationSupportDirectory();
+  final file = File(p.join(dir.path, 'comma.db'));
+  return openEncryptedDatabase(file, await _loadOrCreateKey());
+});
 
 /// Opens [file] with SQLite3 Multiple Ciphers using [key].
 /// [key] must not contain single quotes.
 QueryExecutor openEncryptedDatabase(File file, String key) =>
-    NativeDatabase.createInBackground(file, setup: (db) {
-      db.execute("PRAGMA key = '$key';");
-      // Fails here, rather than on first use, if the key is wrong.
-      db.select('SELECT count(*) FROM sqlite_master;');
-    });
+    NativeDatabase.createInBackground(
+      file,
+      setup: (db) {
+        db.execute("PRAGMA key = '$key';");
+        // Fails here, rather than on first use, if the key is wrong.
+        db.select('SELECT count(*) FROM sqlite_master;');
+      },
+    );
 
 Future<String> _loadOrCreateKey() async {
   const storage = FlutterSecureStorage();

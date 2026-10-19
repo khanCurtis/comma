@@ -42,20 +42,39 @@ List<Irregularity> findIrregularities(
   for (final c in cycles) {
     final length = c.length;
     if (length != null && length < 24) {
-      flags.add(Irregularity(IrregularityKind.shortCycle,
-          cycleStart: c.start, days: length));
+      flags.add(
+        Irregularity(
+          IrregularityKind.shortCycle,
+          cycleStart: c.start,
+          days: length,
+        ),
+      );
     } else if (length != null && length > 38) {
-      flags.add(Irregularity(IrregularityKind.longCycle,
-          cycleStart: c.start, days: length));
+      flags.add(
+        Irregularity(
+          IrregularityKind.longCycle,
+          cycleStart: c.start,
+          days: length,
+        ),
+      );
     }
     if (c.periodLength > 8) {
-      flags.add(Irregularity(IrregularityKind.longPeriod,
-          cycleStart: c.start, days: c.periodLength));
+      flags.add(
+        Irregularity(
+          IrregularityKind.longPeriod,
+          cycleStart: c.start,
+          days: c.periodLength,
+        ),
+      );
     }
   }
 
-  final recent =
-      cycles.where((c) => c.isComplete).toList().reversed.take(6).toList();
+  final recent = cycles
+      .where((c) => c.isComplete)
+      .toList()
+      .reversed
+      .take(6)
+      .toList();
   if (recent.length >= 3) {
     final lengths = recent.map((c) => c.length!).toList()..sort();
     final spread = lengths.last - lengths.first;
@@ -67,8 +86,13 @@ List<Irregularity> findIrregularities(
   if (cycles.isNotEmpty && !pregnant) {
     final since = daysBetween(cycles.last.start, today);
     if (since >= 90) {
-      flags.add(Irregularity(IrregularityKind.missedPeriods,
-          cycleStart: cycles.last.start, days: since));
+      flags.add(
+        Irregularity(
+          IrregularityKind.missedPeriods,
+          cycleStart: cycles.last.start,
+          days: since,
+        ),
+      );
     }
   }
 

@@ -61,9 +61,11 @@ CycleStats? computeStats(
 }) {
   final usable = cycles
       .where((c) => c.isComplete && !excludedStarts.contains(c.start))
-      .where((c) =>
-          c.length! >= _plausibleCycleLength.min &&
-          c.length! <= _plausibleCycleLength.max)
+      .where(
+        (c) =>
+            c.length! >= _plausibleCycleLength.min &&
+            c.length! <= _plausibleCycleLength.max,
+      )
       .toList();
   if (usable.isEmpty) return null;
 
@@ -84,7 +86,7 @@ CycleStats? computeStats(
   final variance = lengths.length < 2
       ? 0.0
       : lengths.map((l) => math.pow(l - plainMean, 2)).reduce((a, b) => a + b) /
-          (lengths.length - 1);
+            (lengths.length - 1);
 
   final periodLengths = [for (final c in recent) c.periodLength]..sort();
   final median = periodLengths[periodLengths.length ~/ 2];
@@ -130,17 +132,19 @@ List<CyclePrediction> predictUpcoming(
   for (var i = 1; i <= count; i++) {
     start = addDays(start, cycleLength);
     final ovulation = addDays(start, -lutealLength);
-    predictions.add(CyclePrediction(
-      periodStart: start,
-      periodEnd: addDays(start, periodLength - 1),
-      // Uncertainty grows with each cycle we predict ahead.
-      earliestStart: addDays(start, -spread * i),
-      latestStart: addDays(start, spread * i),
-      ovulation: ovulation,
-      fertileStart: addDays(ovulation, -5),
-      fertileEnd: addDays(ovulation, 1),
-      confidence: i == 1 ? confidence : Confidence.low,
-    ));
+    predictions.add(
+      CyclePrediction(
+        periodStart: start,
+        periodEnd: addDays(start, periodLength - 1),
+        // Uncertainty grows with each cycle we predict ahead.
+        earliestStart: addDays(start, -spread * i),
+        latestStart: addDays(start, spread * i),
+        ovulation: ovulation,
+        fertileStart: addDays(ovulation, -5),
+        fertileEnd: addDays(ovulation, 1),
+        confidence: i == 1 ? confidence : Confidence.low,
+      ),
+    );
   }
   return predictions;
 }
