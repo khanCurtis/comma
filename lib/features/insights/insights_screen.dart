@@ -10,6 +10,7 @@ import '../../domain/engine/patterns.dart';
 import '../../domain/engine/status.dart';
 import '../../domain/models/symptoms.dart';
 import '../../domain/units.dart';
+import '../reports/reports_screen.dart';
 import 'charts.dart';
 import '../../domain/models/day_log.dart';
 import '../sex/sex_entry_sheet.dart';
@@ -55,7 +56,16 @@ class InsightsScreen extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        Text('Insights', style: text.headlineSmall),
+        Row(
+          children: [
+            Expanded(child: Text('Insights', style: text.headlineSmall)),
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.description_outlined),
+              label: const Text('Doctor report'),
+              onPressed: () => openReports(context),
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
         if (stats == null)
           const Text('Log at least two periods to see your cycle stats.')

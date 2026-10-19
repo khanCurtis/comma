@@ -5,6 +5,7 @@ import 'package:comma/domain/models/day_log.dart';
 import 'package:comma/domain/units.dart';
 import 'package:comma/features/insights/charts.dart';
 import 'package:comma/features/insights/insights_screen.dart';
+import 'package:comma/features/reports/reports_screen.dart';
 import 'package:drift/drift.dart' show DatabaseConnection, Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -82,6 +83,23 @@ void main() {
     );
     await tester.scrollUntilVisible(find.textContaining('(temperature)'), 300);
     expect(find.textContaining('(temperature)'), findsOneWidget);
+
+    // The doctor report screen opens from Insights.
+    await tester.scrollUntilVisible(find.text('Doctor report'), -500);
+    await tester.tap(find.text('Doctor report'));
+    await tester.pumpAndSettle();
+    expect(find.text('Report for your doctor'), findsOneWidget);
+    expect(find.text('Share PDF'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Share CSV files'),
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(ReportsScreen),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
 
     await tester.pumpWidget(const SizedBox());
     await db.close();

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../app/providers.dart';
 import '../../domain/units.dart';
+import '../reports/reports_screen.dart';
 import 'backup_flow.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -109,6 +110,12 @@ class SettingsScreen extends ConsumerWidget {
                 : 'Last backup ${DateFormat.yMMMd().format(lastBackup)}',
           ),
           onTap: () => exportBackupFlow(context, ref),
+        ),
+        ListTile(
+          leading: const Icon(Icons.description_outlined),
+          title: const Text('Reports & export'),
+          subtitle: const Text('Doctor report (PDF) and spreadsheet files'),
+          onTap: () => openReports(context),
         ),
         ListTile(
           leading: const Icon(Icons.restore),

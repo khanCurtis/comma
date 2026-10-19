@@ -63,6 +63,19 @@ class AppDatabase extends _$AppDatabase {
     return query.watch();
   }
 
+  Future<List<DayLog>> allDayLogs() =>
+      (select(dayLogs)..orderBy([(t) => OrderingTerm.asc(t.date)])).get();
+
+  Future<List<SymptomEntry>> allSymptomEntries() =>
+      select(symptomEntries).get();
+
+  Future<List<SexEntry>> allSexEntries() =>
+      (select(sexEntries)..orderBy([
+            (t) => OrderingTerm.asc(t.date),
+            (t) => OrderingTerm.asc(t.minuteOfDay, nulls: NullsOrder.first),
+          ]))
+          .get();
+
   Stream<List<SymptomEntry>> watchAllSymptomEntries() =>
       select(symptomEntries).watch();
 
